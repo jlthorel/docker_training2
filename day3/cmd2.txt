@@ -1,0 +1,760 @@
+[usere@lx-12-5 ~]$ cd Documents/training_docker/
+[usere@lx-12-5 training_docker]$ mkdir day3
+[usere@lx-12-5 training_docker]$ cd day3
+[usere@lx-12-5 day3]$ docker run -d ubuntu sleep infinity
+4fae568c7aeb522a0dbc3fe02a828ebd72e2ef4c6ff0c6963856ca789929ab9d
+[usere@lx-12-5 day3]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+4fae568c7aeb        ubuntu              "sleep infinity"    9 seconds ago       Up 8 seconds                            quirky_banach
+[usere@lx-12-5 day3]$ docker run -d ubuntu sleep infinity
+2921ca79a99df40819031834ac54ffc7baf34c1806588017e63e5d16c9f04e3d
+[usere@lx-12-5 day3]$ brctl show
+bridge name	bridge id		STP enabled	interfaces
+docker0		8000.02428fc6414e	no		veth0ca6430
+							veth1b8b032
+[usere@lx-12-5 day3]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED              STATUS              PORTS               NAMES
+2921ca79a99d        ubuntu              "sleep infinity"    About a minute ago   Up About a minute                       objective_varahamihira
+4fae568c7aeb        ubuntu              "sleep infinity"    2 minutes ago        Up 2 minutes                            quirky_banach
+[usere@lx-12-5 day3]$ docker network inspect 
+"docker network inspect" requires at least 1 argument.
+See 'docker network inspect --help'.
+
+Usage:  docker network inspect [OPTIONS] NETWORK [NETWORK...] [flags]
+
+Display detailed information on one or more networks
+[usere@lx-12-5 day3]$ docker network inspect 
+"docker network inspect" requires at least 1 argument.
+See 'docker network inspect --help'.
+
+Usage:  docker network inspect [OPTIONS] NETWORK [NETWORK...] [flags]
+
+Display detailed information on one or more networks
+[usere@lx-12-5 day3]$ docker network inspect docker0
+[]
+Error: No such network: docker0
+[usere@lx-12-5 day3]$ docker network inspect bridge
+[
+    {
+        "Name": "bridge",
+        "Id": "c28a4042a091a409918b90d7232ad4f552db693516ebd29d5e8988e22999dca3",
+        "Created": "2018-01-17T08:53:23.917229961+01:00",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": [
+                {
+                    "Subnet": "172.17.0.0/16",
+                    "Gateway": "172.17.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "2921ca79a99df40819031834ac54ffc7baf34c1806588017e63e5d16c9f04e3d": {
+                "Name": "objective_varahamihira",
+                "EndpointID": "e7055437c5fe78cfdd4c27e16c473d20bf939d84d2b733d3c145e6381f405435",
+                "MacAddress": "02:42:ac:11:00:03",
+                "IPv4Address": "172.17.0.3/16",
+                "IPv6Address": ""
+            },
+            "4fae568c7aeb522a0dbc3fe02a828ebd72e2ef4c6ff0c6963856ca789929ab9d": {
+                "Name": "quirky_banach",
+                "EndpointID": "578fed52a11ca580410cf41a7e24dd981a1fc3312ace0d1ce42c92ae4d1ebbaf",
+                "MacAddress": "02:42:ac:11:00:02",
+                "IPv4Address": "172.17.0.2/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {
+            "com.docker.network.bridge.default_bridge": "true",
+            "com.docker.network.bridge.enable_icc": "true",
+            "com.docker.network.bridge.enable_ip_masquerade": "true",
+            "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
+            "com.docker.network.bridge.name": "docker0",
+            "com.docker.network.driver.mtu": "1500"
+        },
+        "Labels": {}
+    }
+]
+[usere@lx-12-5 day3]$ docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+c28a4042a091        bridge              bridge              local
+1fe74afc691c        host                host                local
+58167e78e7ae        none                null                local
+[usere@lx-12-5 day3]$ docker network create dev
+7bfaae5413043af64866cd952816cdc4b00f575bd699ea278554d41edbaa9c2e
+[usere@lx-12-5 day3]$ docker run -d --net dev ubuntu
+8ef13691390c37dd0a484786c3d2ae4072ee3de2f9c431b387b43e8daa10eec3
+[usere@lx-12-5 day3]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+2921ca79a99d        ubuntu              "sleep infinity"    10 minutes ago      Up 10 minutes                           objective_varahamihira
+4fae568c7aeb        ubuntu              "sleep infinity"    10 minutes ago      Up 10 minutes                           quirky_banach
+[usere@lx-12-5 day3]$ docker run -d --net dev ubuntu sleep infinity
+43a13f59b986f7f7be2b82ecb6bc2e1bf403ca68b6ca5217104fc769783edde4
+[usere@lx-12-5 day3]$ docker run -d --net dev ubuntu sleep infinity
+791e28e29a92ea06a49ec392201334daf84737f7c10ab74dbe04c172291c31a4
+[usere@lx-12-5 day3]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+791e28e29a92        ubuntu              "sleep infinity"    3 seconds ago       Up 2 seconds                            vibrant_engelbart
+43a13f59b986        ubuntu              "sleep infinity"    7 seconds ago       Up 6 seconds                            admiring_raman
+2921ca79a99d        ubuntu              "sleep infinity"    10 minutes ago      Up 10 minutes                           objective_varahamihira
+4fae568c7aeb        ubuntu              "sleep infinity"    10 minutes ago      Up 10 minutes                           quirky_banach
+[usere@lx-12-5 day3]$ docker run -d --name utest --net dev ubuntu sleep infinity
+c114d4de9106c0714277c89290db3a35c87f3a6ddf900b4a28921225cc877420
+[usere@lx-12-5 day3]$ docker exec -it 8ef13691390c37dd0a484786c3d2a /bin/bash
+Error response from daemon: Container 8ef13691390c37dd0a484786c3d2ae4072ee3de2f9c431b387b43e8daa10eec3 is not running
+[usere@lx-12-5 day3]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED              STATUS              PORTS               NAMES
+c114d4de9106        ubuntu              "sleep infinity"    About a minute ago   Up About a minute                       utest
+791e28e29a92        ubuntu              "sleep infinity"    4 minutes ago        Up 4 minutes                            vibrant_engelbart
+43a13f59b986        ubuntu              "sleep infinity"    4 minutes ago        Up 4 minutes                            admiring_raman
+2921ca79a99d        ubuntu              "sleep infinity"    15 minutes ago       Up 15 minutes                           objective_varahamihira
+4fae568c7aeb        ubuntu              "sleep infinity"    15 minutes ago       Up 15 minutes                           quirky_banach
+[usere@lx-12-5 day3]$ docker exec -it 791e28e29a92 /bin/bash
+root@791e28e29a92:/# apt-get update
+Get:1 http://archive.ubuntu.com/ubuntu xenial InRelease [247 kB]           
+Get:2 http://security.ubuntu.com/ubuntu xenial-security InRelease [102 kB] 
+Get:3 http://archive.ubuntu.com/ubuntu xenial-updates InRelease [102 kB]       
+Get:4 http://archive.ubuntu.com/ubuntu xenial-backports InRelease [102 kB]     
+Get:5 http://archive.ubuntu.com/ubuntu xenial/universe Sources [9802 kB]       
+Get:6 http://security.ubuntu.com/ubuntu xenial-security/universe Sources [56.8 kB]
+Get:7 http://security.ubuntu.com/ubuntu xenial-security/main amd64 Packages [540 kB]
+Get:8 http://security.ubuntu.com/ubuntu xenial-security/restricted amd64 Packages [12.7 kB]
+Get:9 http://security.ubuntu.com/ubuntu xenial-security/universe amd64 Packages [246 kB]
+Get:10 http://security.ubuntu.com/ubuntu xenial-security/multiverse amd64 Packages [3492 B]
+Get:11 http://archive.ubuntu.com/ubuntu xenial/main amd64 Packages [1558 kB]   
+Get:12 http://archive.ubuntu.com/ubuntu xenial/restricted amd64 Packages [14.1 kB]
+Get:13 http://archive.ubuntu.com/ubuntu xenial/universe amd64 Packages [9827 kB]
+Get:14 http://archive.ubuntu.com/ubuntu xenial/multiverse amd64 Packages [176 kB]
+Get:15 http://archive.ubuntu.com/ubuntu xenial-updates/universe Sources [234 kB]
+Get:16 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 Packages [904 kB]
+Get:17 http://archive.ubuntu.com/ubuntu xenial-updates/restricted amd64 Packages [13.1 kB]
+Get:18 http://archive.ubuntu.com/ubuntu xenial-updates/universe amd64 Packages [735 kB]
+Get:19 http://archive.ubuntu.com/ubuntu xenial-updates/multiverse amd64 Packages [18.5 kB]
+Get:20 http://archive.ubuntu.com/ubuntu xenial-backports/main amd64 Packages [5162 B]
+Get:21 http://archive.ubuntu.com/ubuntu xenial-backports/universe amd64 Packages [7146 B]
+Fetched 24.7 MB in 29s (825 kB/s)                                              
+Reading package lists... Done
+root@791e28e29a92:/# apt-get install iputils-ping
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following additional packages will be installed:
+  libffi6 libgmp10 libgnutls-openssl27 libgnutls30 libhogweed4 libidn11
+  libnettle6 libp11-kit0 libtasn1-6
+Suggested packages:
+  gnutls-bin
+The following NEW packages will be installed:
+  iputils-ping libffi6 libgmp10 libgnutls-openssl27 libgnutls30 libhogweed4
+  libidn11 libnettle6 libp11-kit0 libtasn1-6
+0 upgraded, 10 newly installed, 0 to remove and 1 not upgraded.
+Need to get 1305 kB of archives.
+After this operation, 3779 kB of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+Get:1 http://archive.ubuntu.com/ubuntu xenial/main amd64 libgmp10 amd64 2:6.1.0+dfsg-2 [240 kB]
+Get:2 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libnettle6 amd64 3.2-1ubuntu0.16.04.1 [93.5 kB]
+Get:3 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libhogweed4 amd64 3.2-1ubuntu0.16.04.1 [136 kB]
+Get:4 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libidn11 amd64 1.32-3ubuntu1.2 [46.5 kB]
+Get:5 http://archive.ubuntu.com/ubuntu xenial/main amd64 libffi6 amd64 3.2.1-4 [17.8 kB]
+Get:6 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libp11-kit0 amd64 0.23.2-5~ubuntu16.04.1 [105 kB]
+Get:7 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libtasn1-6 amd64 4.7-3ubuntu0.16.04.2 [43.3 kB]
+Get:8 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libgnutls30 amd64 3.4.10-4ubuntu1.4 [548 kB]
+Get:9 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libgnutls-openssl27 amd64 3.4.10-4ubuntu1.4 [22.0 kB]
+Get:10 http://archive.ubuntu.com/ubuntu xenial/main amd64 iputils-ping amd64 3:20121221-5ubuntu2 [52.7 kB]
+Fetched 1305 kB in 2s (508 kB/s)       
+debconf: delaying package configuration, since apt-utils is not installed
+Selecting previously unselected package libgmp10:amd64.
+(Reading database ... 4768 files and directories currently installed.)
+Preparing to unpack .../libgmp10_2%3a6.1.0+dfsg-2_amd64.deb ...
+Unpacking libgmp10:amd64 (2:6.1.0+dfsg-2) ...
+Selecting previously unselected package libnettle6:amd64.
+Preparing to unpack .../libnettle6_3.2-1ubuntu0.16.04.1_amd64.deb ...
+Unpacking libnettle6:amd64 (3.2-1ubuntu0.16.04.1) ...
+Selecting previously unselected package libhogweed4:amd64.
+Preparing to unpack .../libhogweed4_3.2-1ubuntu0.16.04.1_amd64.deb ...
+Unpacking libhogweed4:amd64 (3.2-1ubuntu0.16.04.1) ...
+Selecting previously unselected package libidn11:amd64.
+Preparing to unpack .../libidn11_1.32-3ubuntu1.2_amd64.deb ...
+Unpacking libidn11:amd64 (1.32-3ubuntu1.2) ...
+Selecting previously unselected package libffi6:amd64.
+Preparing to unpack .../libffi6_3.2.1-4_amd64.deb ...
+Unpacking libffi6:amd64 (3.2.1-4) ...
+Selecting previously unselected package libp11-kit0:amd64.
+Preparing to unpack .../libp11-kit0_0.23.2-5~ubuntu16.04.1_amd64.deb ...
+Unpacking libp11-kit0:amd64 (0.23.2-5~ubuntu16.04.1) ...
+Selecting previously unselected package libtasn1-6:amd64.
+Preparing to unpack .../libtasn1-6_4.7-3ubuntu0.16.04.2_amd64.deb ...
+Unpacking libtasn1-6:amd64 (4.7-3ubuntu0.16.04.2) ...
+Selecting previously unselected package libgnutls30:amd64.
+Preparing to unpack .../libgnutls30_3.4.10-4ubuntu1.4_amd64.deb ...
+Unpacking libgnutls30:amd64 (3.4.10-4ubuntu1.4) ...
+Selecting previously unselected package libgnutls-openssl27:amd64.
+Preparing to unpack .../libgnutls-openssl27_3.4.10-4ubuntu1.4_amd64.deb ...
+Unpacking libgnutls-openssl27:amd64 (3.4.10-4ubuntu1.4) ...
+Selecting previously unselected package iputils-ping.
+Preparing to unpack .../iputils-ping_3%3a20121221-5ubuntu2_amd64.deb ...
+Unpacking iputils-ping (3:20121221-5ubuntu2) ...
+Processing triggers for libc-bin (2.23-0ubuntu9) ...
+Setting up libgmp10:amd64 (2:6.1.0+dfsg-2) ...
+Setting up libnettle6:amd64 (3.2-1ubuntu0.16.04.1) ...
+Setting up libhogweed4:amd64 (3.2-1ubuntu0.16.04.1) ...
+Setting up libidn11:amd64 (1.32-3ubuntu1.2) ...
+Setting up libffi6:amd64 (3.2.1-4) ...
+Setting up libp11-kit0:amd64 (0.23.2-5~ubuntu16.04.1) ...
+Setting up libtasn1-6:amd64 (4.7-3ubuntu0.16.04.2) ...
+Setting up libgnutls30:amd64 (3.4.10-4ubuntu1.4) ...
+Setting up libgnutls-openssl27:amd64 (3.4.10-4ubuntu1.4) ...
+Setting up iputils-ping (3:20121221-5ubuntu2) ...
+Setcap is not installed, falling back to setuid
+Processing triggers for libc-bin (2.23-0ubuntu9) ...
+root@791e28e29a92:/# ping utest
+PING utest (172.18.0.4) 56(84) bytes of data.
+64 bytes from utest.dev (172.18.0.4): icmp_seq=1 ttl=64 time=0.122 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=2 ttl=64 time=0.083 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=3 ttl=64 time=0.085 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=4 ttl=64 time=0.081 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=5 ttl=64 time=0.057 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=6 ttl=64 time=0.084 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=7 ttl=64 time=0.083 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=8 ttl=64 time=0.068 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=9 ttl=64 time=0.083 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=10 ttl=64 time=0.083 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=11 ttl=64 time=0.083 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=12 ttl=64 time=0.084 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=13 ttl=64 time=0.083 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=14 ttl=64 time=0.084 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=15 ttl=64 time=0.073 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=16 ttl=64 time=0.084 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=17 ttl=64 time=0.083 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=18 ttl=64 time=0.084 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=19 ttl=64 time=0.083 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=20 ttl=64 time=0.085 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=21 ttl=64 time=0.084 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=22 ttl=64 time=0.083 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=23 ttl=64 time=0.082 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=24 ttl=64 time=0.084 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=25 ttl=64 time=0.079 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=26 ttl=64 time=0.084 ms
+64 bytes from utest.dev (172.18.0.4): icmp_seq=27 ttl=64 time=0.086 ms
+^C
+--- utest ping statistics ---
+27 packets transmitted, 27 received, 0% packet loss, time 26000ms
+rtt min/avg/max/mdev = 0.057/0.082/0.122/0.015 ms
+root@791e28e29a92:/# ^C
+root@791e28e29a92:/# brctl show
+bash: brctl: command not found
+root@791e28e29a92:/# exit
+exit
+[usere@lx-12-5 day3]$ brctl show
+bridge name	bridge id		STP enabled	interfaces
+br-7bfaae541304		8000.0242b7057a5f	no		veth88f3e97
+							vetha00a9c6
+							vethd9fe01a
+docker0		8000.02428fc6414e	no		veth0ca6430
+							veth1b8b032
+[usere@lx-12-5 day3]$ docker network create prod
+f3f5b3f77d3249d3ebac97aab06412427fb27ea280e69e72172f5e1795eea1cd
+[usere@lx-12-5 day3]$ docker run -d  --name db1 --net-alias db --net prod ubuntu sleep infinity
+747068b2c23a0589be08d149fc52d9cfd1d0227a08fa14a9f60fe9642bad8de0
+[usere@lx-12-5 day3]$ docker run -d  --name db2 --net-alias db --net prod ubuntu sleep infinity
+f08dd822f76615b8aa655ec27e82fc805f0a3c70596d59a7ddc29ad90a2f68ab
+[usere@lx-12-5 day3]$ docker run -it --net prod alpine
+/ # ping db1
+PING db1 (172.19.0.2): 56 data bytes
+64 bytes from 172.19.0.2: seq=0 ttl=64 time=0.187 ms
+64 bytes from 172.19.0.2: seq=1 ttl=64 time=0.113 ms
+64 bytes from 172.19.0.2: seq=2 ttl=64 time=0.118 ms
+64 bytes from 172.19.0.2: seq=3 ttl=64 time=0.121 ms
+64 bytes from 172.19.0.2: seq=4 ttl=64 time=0.116 ms
+^C
+--- db1 ping statistics ---
+5 packets transmitted, 5 packets received, 0% packet loss
+round-trip min/avg/max = 0.113/0.131/0.187 ms
+/ # ping db2
+PING db2 (172.19.0.3): 56 data bytes
+64 bytes from 172.19.0.3: seq=0 ttl=64 time=0.164 ms
+64 bytes from 172.19.0.3: seq=1 ttl=64 time=0.115 ms
+64 bytes from 172.19.0.3: seq=2 ttl=64 time=0.115 ms
+64 bytes from 172.19.0.3: seq=3 ttl=64 time=0.108 ms
+64 bytes from 172.19.0.3: seq=4 ttl=64 time=0.116 ms
+64 bytes from 172.19.0.3: seq=5 ttl=64 time=0.117 ms
+64 bytes from 172.19.0.3: seq=6 ttl=64 time=0.115 ms
+64 bytes from 172.19.0.3: seq=7 ttl=64 time=0.143 ms
+64 bytes from 172.19.0.3: seq=8 ttl=64 time=0.117 ms
+64 bytes from 172.19.0.3: seq=9 ttl=64 time=0.132 ms
+64 bytes from 172.19.0.3: seq=10 ttl=64 time=0.116 ms
+64 bytes from 172.19.0.3: seq=11 ttl=64 time=0.120 ms
+64 bytes from 172.19.0.3: seq=12 ttl=64 time=0.159 ms
+64 bytes from 172.19.0.3: seq=13 ttl=64 time=0.133 ms
+^C
+--- db2 ping statistics ---
+14 packets transmitted, 14 packets received, 0% packet loss
+round-trip min/avg/max = 0.108/0.126/0.164 ms
+/ # ^C
+/ # exit
+[usere@lx-12-5 day3]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+f08dd822f766        ubuntu              "sleep infinity"    2 minutes ago       Up 2 minutes                            db2
+747068b2c23a        ubuntu              "sleep infinity"    2 minutes ago       Up 2 minutes                            db1
+c114d4de9106        ubuntu              "sleep infinity"    12 minutes ago      Up 12 minutes                           utest
+791e28e29a92        ubuntu              "sleep infinity"    15 minutes ago      Up 15 minutes                           vibrant_engelbart
+43a13f59b986        ubuntu              "sleep infinity"    15 minutes ago      Up 15 minutes                           admiring_raman
+2921ca79a99d        ubuntu              "sleep infinity"    26 minutes ago      Up 26 minutes                           objective_varahamihira
+4fae568c7aeb        ubuntu              "sleep infinity"    26 minutes ago      Up 26 minutes                           quirky_banach
+[usere@lx-12-5 day3]$ docker run -it --net prod alpine
+/ # nslookup db1
+nslookup: can't resolve '(null)': Name does not resolve
+
+Name:      db1
+Address 1: 172.19.0.2 db1.prod
+/ # nslookup db
+nslookup: can't resolve '(null)': Name does not resolve
+
+Name:      db
+Address 1: 172.19.0.2 db1.prod
+Address 2: 172.19.0.3 db2.prod
+/ # exit
+[usere@lx-12-5 day3]$ mkdir composetest
+[usere@lx-12-5 day3]$ cd composetest
+[usere@lx-12-5 composetest]$ ls
+[usere@lx-12-5 composetest]$ vim app.py
+[usere@lx-12-5 composetest]$ python app.py
+Traceback (most recent call last):
+  File "app.py", line 3, in <module>
+    import redis
+ImportError: No module named redis
+[usere@lx-12-5 composetest]$ which python
+/usr/bin/python
+[usere@lx-12-5 composetest]$ cp ../../day2/
+cmd.txt          Dockerfile       entrypoint/      linux_tweet_app/ multi/           python/          tp1/             
+[usere@lx-12-5 composetest]$ cp ../../day2/python/
+app.py            Dockerfile        requirements.txt  
+[usere@lx-12-5 composetest]$ cp ../../day2/python/requirements.txt  .
+[usere@lx-12-5 composetest]$ ls
+app.py  requirements.txt
+[usere@lx-12-5 composetest]$ cat requirements.txt 
+Flask
+Redis
+[usere@lx-12-5 composetest]$ vim requirements.txt 
+[usere@lx-12-5 composetest]$ python --version
+Python 2.7.5
+[usere@lx-12-5 composetest]$ vim Dockerfile
+[usere@lx-12-5 composetest]$ python3
+bash: python3: commande inconnue...
+Commande similaire : 'python'
+[usere@lx-12-5 composetest]$ vim docker-compose.yml
+[usere@lx-12-5 composetest]$ cat Dockerfile 
+FROM python:3.4-alpine
+ADD . /code
+WORKDIR /code
+RUN pip install -r requirements.txt
+CMD ["python", "app.py"]
+[usere@lx-12-5 composetest]$ cat docker-compose.yml 
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+     - "5000:5000"
+  redis:
+    image: "redis:alpine"
+[usere@lx-12-5 composetest]$ docker-compose up
+Creating network "composetest_default" with the default driver
+Building web
+Step 1/5 : FROM python:3.4-alpine
+3.4-alpine: Pulling from library/python
+81033e7c1d6a: Pull complete
+9b61101706a6: Pull complete
+d34c54b4be74: Pull complete
+5f11014aa0b0: Pull complete
+cf4deabc71b9: Pull complete
+Digest: sha256:02c9590429569449b10545e7f4815665dedcca363e708e66ea0d204f6812bbcc
+Status: Downloaded newer image for python:3.4-alpine
+ ---> 95dcd629cec6
+Step 2/5 : ADD . /code
+ ---> e6cb90ca4fbb
+Step 3/5 : WORKDIR /code
+Removing intermediate container 610f401449f6
+ ---> ea5d0dd95a96
+Step 4/5 : RUN pip install -r requirements.txt
+ ---> Running in 906b9a676735
+Collecting flask (from -r requirements.txt (line 1))
+  Downloading Flask-0.12.2-py2.py3-none-any.whl (83kB)
+Collecting redis (from -r requirements.txt (line 2))
+  Downloading redis-2.10.6-py2.py3-none-any.whl (64kB)
+Collecting Werkzeug>=0.7 (from flask->-r requirements.txt (line 1))
+  Downloading Werkzeug-0.14.1-py2.py3-none-any.whl (322kB)
+Collecting click>=2.0 (from flask->-r requirements.txt (line 1))
+  Downloading click-6.7-py2.py3-none-any.whl (71kB)
+Collecting itsdangerous>=0.21 (from flask->-r requirements.txt (line 1))
+  Downloading itsdangerous-0.24.tar.gz (46kB)
+Collecting Jinja2>=2.4 (from flask->-r requirements.txt (line 1))
+  Downloading Jinja2-2.10-py2.py3-none-any.whl (126kB)
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.4->flask->-r requirements.txt (line 1))
+  Downloading MarkupSafe-1.0.tar.gz
+Building wheels for collected packages: itsdangerous, MarkupSafe
+  Running setup.py bdist_wheel for itsdangerous: started
+  Running setup.py bdist_wheel for itsdangerous: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/fc/a8/66/24d655233c757e178d45dea2de22a04c6d92766abfb741129a
+  Running setup.py bdist_wheel for MarkupSafe: started
+  Running setup.py bdist_wheel for MarkupSafe: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/88/a7/30/e39a54a87bcbe25308fa3ca64e8ddc75d9b3e5afa21ee32d57
+Successfully built itsdangerous MarkupSafe
+Installing collected packages: Werkzeug, click, itsdangerous, MarkupSafe, Jinja2, flask, redis
+Successfully installed Jinja2-2.10 MarkupSafe-1.0 Werkzeug-0.14.1 click-6.7 flask-0.12.2 itsdangerous-0.24 redis-2.10.6
+Removing intermediate container 906b9a676735
+ ---> 8a46c0853a98
+Step 5/5 : CMD ["python", "app.py"]
+ ---> Running in 648cf44b6c83
+Removing intermediate container 648cf44b6c83
+ ---> 73d5393eb139
+Successfully built 73d5393eb139
+Successfully tagged composetest_web:latest
+WARNING: Image for service web was built because it did not already exist. To rebuild this image you must use `docker-compose build` or `docker-compose up --build`.
+Pulling redis (redis:alpine)...
+alpine: Pulling from library/redis
+605ce1bd3f31: Pull complete
+d12d456b03b7: Pull complete
+b6e6ee69c5e2: Pull complete
+813ea0248ee4: Pull complete
+62208b7f07e1: Pull complete
+35b7abefa067: Pull complete
+Digest: sha256:a5fd9334b28d6afdc8b84aad8a01056d8d1d849cb5a744919caf40d5b57597b2
+Status: Downloaded newer image for redis:alpine
+Creating composetest_web_1   ... done
+Creating composetest_redis_1 ... done
+Attaching to composetest_redis_1, composetest_web_1
+redis_1  | 1:C 17 Jan 09:15:38.497 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+redis_1  | 1:C 17 Jan 09:15:38.497 # Redis version=4.0.6, bits=64, commit=00000000, modified=0, pid=1, just started
+redis_1  | 1:C 17 Jan 09:15:38.497 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+redis_1  | 1:M 17 Jan 09:15:38.498 * Running mode=standalone, port=6379.
+redis_1  | 1:M 17 Jan 09:15:38.498 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+redis_1  | 1:M 17 Jan 09:15:38.498 # Server initialized
+redis_1  | 1:M 17 Jan 09:15:38.498 # WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+redis_1  | 1:M 17 Jan 09:15:38.498 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+redis_1  | 1:M 17 Jan 09:15:38.498 * Ready to accept connections
+web_1    |  * Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
+web_1    |  * Restarting with stat
+web_1    |  * Debugger is active!
+web_1    |  * Debugger PIN: 301-989-973
+web_1    | 172.20.0.1 - - [17/Jan/2018 09:34:42] "GET / HTTP/1.1" 200 -
+web_1    | 172.20.0.1 - - [17/Jan/2018 09:34:42] "GET /favicon.ico HTTP/1.1" 404 -
+web_1    | 172.20.0.1 - - [17/Jan/2018 09:34:42] "GET /favicon.ico HTTP/1.1" 404 -
+web_1    | 172.20.0.1 - - [17/Jan/2018 09:34:49] "GET / HTTP/1.1" 200 -
+redis_1  | 1:signal-handler (1516181939) Received SIGTERM scheduling shutdown...
+redis_1  | 1:M 17 Jan 09:38:59.654 # User requested shutdown...
+redis_1  | 1:M 17 Jan 09:38:59.654 * Saving the final RDB snapshot before exiting.
+redis_1  | 1:M 17 Jan 09:38:59.659 * DB saved on disk
+redis_1  | 1:M 17 Jan 09:38:59.659 # Redis is now ready to exit, bye bye...
+composetest_web_1 exited with code 0
+composetest_redis_1 exited with code 0
+[usere@lx-12-5 composetest]$ 5~
+bash: 5~: commande inconnue...
+[usere@lx-12-5 composetest]$ 
+[usere@lx-12-5 composetest]$ docker-machine create --driver virtualbox myvm1
+Creating CA: /home/usere/.docker/machine/certs/ca.pem
+Creating client certificate: /home/usere/.docker/machine/certs/cert.pem
+Running pre-create checks...
+(myvm1) Image cache directory does not exist, creating it at /home/usere/.docker/machine/cache...
+(myvm1) No default Boot2Docker ISO found locally, downloading the latest release...
+(myvm1) Latest release for github.com/boot2docker/boot2docker is v18.01.0-ce
+(myvm1) Downloading /home/usere/.docker/machine/cache/boot2docker.iso from https://github.com/boot2docker/boot2docker/releases/download/v18.01.0-ce/boot2docker.iso...
+(myvm1) 0%....10%....20%....30%....40%....50%....60%....70%....80%....90%....100%
+Creating machine...
+(myvm1) Copying /home/usere/.docker/machine/cache/boot2docker.iso to /home/usere/.docker/machine/machines/myvm1/boot2docker.iso...
+(myvm1) Creating VirtualBox VM...
+(myvm1) Creating SSH key...
+(myvm1) Starting the VM...
+(myvm1) Check network to re-create if needed...
+(myvm1) Found a new host-only adapter: "vboxnet0"
+(myvm1) Waiting for an IP...
+Waiting for machine to be running, this may take a few minutes...
+Detecting operating system of created instance...
+Waiting for SSH to be available...
+Detecting the provisioner...
+Provisioning with boot2docker...
+Copying certs to the local machine directory...
+Copying certs to the remote machine...
+Setting Docker configuration on the remote daemon...
+Checking connection to Docker...
+Docker is up and running!
+To see how to connect your Docker Client to the Docker Engine running on this virtual machine, run: docker-machine env myvm1
+[usere@lx-12-5 composetest]$ docker-machine create --driver virtualbox myvm3
+Running pre-create checks...
+Creating machine...
+(myvm3) Copying /home/usere/.docker/machine/cache/boot2docker.iso to /home/usere/.docker/machine/machines/myvm3/boot2docker.iso...
+(myvm3) Creating VirtualBox VM...
+(myvm3) Creating SSH key...
+(myvm3) Starting the VM...
+(myvm3) Check network to re-create if needed...
+(myvm3) Waiting for an IP...
+Waiting for machine to be running, this may take a few minutes...
+Detecting operating system of created instance...
+Waiting for SSH to be available...
+Detecting the provisioner...
+Provisioning with boot2docker...
+Copying certs to the local machine directory...
+Copying certs to the remote machine...
+Setting Docker configuration on the remote daemon...
+Checking connection to Docker...
+Docker is up and running!
+To see how to connect your Docker Client to the Docker Engine running on this virtual machine, run: docker-machine env myvm3
+[usere@lx-12-5 composetest]$ docker-machine ls
+NAME    ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+myvm1   -        virtualbox   Running   tcp://192.168.99.100:2376           v18.01.0-ce   
+myvm2   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.01.0-ce   
+myvm3   -        virtualbox   Running   tcp://192.168.99.102:2376           v18.01.0-ce   
+[usere@lx-12-5 composetest]$ docker-machine ssh myvm1
+                        ##         .
+                  ## ## ##        ==
+               ## ## ## ## ##    ===
+           /"""""""""""""""""\___/ ===
+      ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
+           \______ o           __/
+             \    \         __/
+              \____\_______/
+ _                 _   ____     _            _
+| |__   ___   ___ | |_|___ \ __| | ___   ___| | _____ _ __
+| '_ \ / _ \ / _ \| __| __) / _` |/ _ \ / __| |/ / _ \ '__|
+| |_) | (_) | (_) | |_ / __/ (_| | (_) | (__|   <  __/ |
+|_.__/ \___/ \___/ \__|_____\__,_|\___/ \___|_|\_\___|_|
+Boot2Docker version 18.01.0-ce, build HEAD : 0bb7bbd - Thu Jan 11 16:32:39 UTC 2018
+Docker version 18.01.0-ce, build 03596f5
+docker@myvm1:~$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+docker@myvm1:~$ exit
+[usere@lx-12-5 composetest]$ docker-machine env myvm1
+export DOCKER_TLS_VERIFY="1"
+export DOCKER_HOST="tcp://192.168.99.100:2376"
+export DOCKER_CERT_PATH="/home/usere/.docker/machine/machines/myvm1"
+export DOCKER_MACHINE_NAME="myvm1"
+# Run this command to configure your shell: 
+# eval $(docker-machine env myvm1)
+[usere@lx-12-5 composetest]$ docker-machine ls
+NAME    ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+myvm1   -        virtualbox   Running   tcp://192.168.99.100:2376           v18.01.0-ce   
+myvm2   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.01.0-ce   
+myvm3   -        virtualbox   Running   tcp://192.168.99.102:2376           v18.01.0-ce   
+[usere@lx-12-5 composetest]$ eval $(docker-machine env myvm1)
+[usere@lx-12-5 composetest]$ docker-machine ls
+NAME    ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+myvm1   *        virtualbox   Running   tcp://192.168.99.100:2376           v18.01.0-ce   
+myvm2   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.01.0-ce   
+myvm3   -        virtualbox   Running   tcp://192.168.99.102:2376           v18.01.0-ce   
+[usere@lx-12-5 composetest]$ docker info
+Containers: 0
+ Running: 0
+ Paused: 0
+ Stopped: 0
+Images: 0
+Server Version: 18.01.0-ce
+Storage Driver: aufs
+ Root Dir: /mnt/sda1/var/lib/docker/aufs
+ Backing Filesystem: extfs
+ Dirs: 0
+ Dirperm1 Supported: true
+Logging Driver: json-file
+Cgroup Driver: cgroupfs
+Plugins:
+ Volume: local
+ Network: bridge host macvlan null overlay
+ Log: awslogs fluentd gcplogs gelf journald json-file logentries splunk syslog
+Swarm: inactive
+Runtimes: runc
+Default Runtime: runc
+Init Binary: docker-init
+containerd version: 89623f28b87a6004d4b785663257362d1658a729
+runc version: b2567b37d7b75eb4cf325b77297b140ea686ce8f
+init version: 949e6fa
+Security Options:
+ seccomp
+  Profile: default
+Kernel Version: 4.4.111-boot2docker
+Operating System: Boot2Docker 18.01.0-ce (TCL 8.2.1); HEAD : 0bb7bbd - Thu Jan 11 16:32:39 UTC 2018
+OSType: linux
+Architecture: x86_64
+CPUs: 1
+Total Memory: 995.9MiB
+Name: myvm1
+ID: RSI4:RKUP:OFL7:6TUB:N6VC:E4BC:OB7W:H2BF:BP25:EAWT:MQDY:L3UQ
+Docker Root Dir: /mnt/sda1/var/lib/docker
+Debug Mode (client): false
+Debug Mode (server): true
+ File Descriptors: 19
+ Goroutines: 33
+ System Time: 2018-01-17T10:52:53.315060014Z
+ EventsListeners: 0
+Username: jthorel
+Registry: https://index.docker.io/v1/
+Labels:
+ provider=virtualbox
+Experimental: false
+Insecure Registries:
+ 127.0.0.0/8
+Live Restore Enabled: false
+
+[usere@lx-12-5 composetest]$ docker run -d nginx:alpine
+Unable to find image 'nginx:alpine' locally
+alpine: Pulling from library/nginx
+550fe1bea624: Pull complete 
+d421ba34525b: Pull complete 
+fdcbcb327323: Pull complete 
+bfbcec2fc4d5: Pull complete 
+Digest: sha256:c8ff0187cc75e1f5002c7ca9841cb191d33c4080f38140b9d6f07902ababbe66
+Status: Downloaded newer image for nginx:alpine
+dda1ec8ca97a87b1beea746ece3e18e5e1c8f8c7fbd7a5edbfba5f87e8edcaf6
+[usere@lx-12-5 composetest]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
+dda1ec8ca97a        nginx:alpine        "nginx -g 'daemon of…"   43 seconds ago      Up 42 seconds       80/tcp              suspicious_brahmagupta
+[usere@lx-12-5 composetest]$ docker-machine ls
+NAME    ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+myvm1   *        virtualbox   Running   tcp://192.168.99.100:2376           v18.01.0-ce   
+myvm2   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.01.0-ce   
+myvm3   -        virtualbox   Running   tcp://192.168.99.102:2376           v18.01.0-ce   
+[usere@lx-12-5 composetest]$ docker swarm init --advertise-addr 192.168.99.100
+Swarm initialized: current node (vds9x8e6wqd73u6c68uwhl39j) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-4gvivz7a61xl8eqrpmsusaa107rv79u7tfmvazcba8pgzienkc-7vz6vsrew1jvg9r9vajab2djv 192.168.99.100:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+[usere@lx-12-5 composetest]$ docker-machine ssh myvm2
+                        ##         .
+                  ## ## ##        ==
+               ## ## ## ## ##    ===
+           /"""""""""""""""""\___/ ===
+      ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
+           \______ o           __/
+             \    \         __/
+              \____\_______/
+ _                 _   ____     _            _
+| |__   ___   ___ | |_|___ \ __| | ___   ___| | _____ _ __
+| '_ \ / _ \ / _ \| __| __) / _` |/ _ \ / __| |/ / _ \ '__|
+| |_) | (_) | (_) | |_ / __/ (_| | (_) | (__|   <  __/ |
+|_.__/ \___/ \___/ \__|_____\__,_|\___/ \___|_|\_\___|_|
+Boot2Docker version 18.01.0-ce, build HEAD : 0bb7bbd - Thu Jan 11 16:32:39 UTC 2018
+Docker version 18.01.0-ce, build 03596f5
+docker@myvm2:~$ docker swarm join --token SWMTKN-1-4gvivz7a61xl8eqrpmsusaa107rv79u7tfmvazcba8pgzienkc-7vz6vsrew1jvg9r9vajab2djv 192.168.99.100:2377
+This node joined a swarm as a worker.
+docker@myvm2:~$ exit
+[usere@lx-12-5 composetest]$ docker-machine ssh myvm3
+                        ##         .
+                  ## ## ##        ==
+               ## ## ## ## ##    ===
+           /"""""""""""""""""\___/ ===
+      ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
+           \______ o           __/
+             \    \         __/
+              \____\_______/
+ _                 _   ____     _            _
+| |__   ___   ___ | |_|___ \ __| | ___   ___| | _____ _ __
+| '_ \ / _ \ / _ \| __| __) / _` |/ _ \ / __| |/ / _ \ '__|
+| |_) | (_) | (_) | |_ / __/ (_| | (_) | (__|   <  __/ |
+|_.__/ \___/ \___/ \__|_____\__,_|\___/ \___|_|\_\___|_|
+Boot2Docker version 18.01.0-ce, build HEAD : 0bb7bbd - Thu Jan 11 16:32:39 UTC 2018
+Docker version 18.01.0-ce, build 03596f5
+docker@myvm3:~$ docker swarm join --token SWMTKN-1-4gvivz7a61xl8eqrpmsusaa107rv79u7tfmvazcba8pgzienkc-7vz6vsrew1jvg9r9vajab2djv 192.168.99.100:2377
+This node joined a swarm as a worker.
+docker@myvm3:~$ exit
+[usere@lx-12-5 composetest]$ docker node ls
+ID                            HOSTNAME            STATUS              AVAILABILITY        MANAGER STATUS
+vds9x8e6wqd73u6c68uwhl39j *   myvm1               Ready               Active              Leader
+u903kcpz1w2cdayeqqwxz1eq0     myvm2               Ready               Active              
+pxwq768i6tzh1225a5eh4k29t     myvm3               Ready               Active              
+[usere@lx-12-5 composetest]$ docker node ls
+ID                            HOSTNAME            STATUS              AVAILABILITY        MANAGER STATUS
+vds9x8e6wqd73u6c68uwhl39j *   myvm1               Ready               Active              Leader
+u903kcpz1w2cdayeqqwxz1eq0     myvm2               Ready               Active              
+pxwq768i6tzh1225a5eh4k29t     myvm3               Ready               Active              
+[usere@lx-12-5 composetest]$ docker service create --name microphp -p 8080:80 revollat/micro-php-app-docker
+o5bi1fvkch91m8uu117mhd6il
+overall progress: 1 out of 1 tasks 
+1/1: running   [==================================================>] 
+verify: Service converged 
+[usere@lx-12-5 composetest]$ docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE                                  PORTS
+o5bi1fvkch91        microphp            replicated          1/1                 revollat/micro-php-app-docker:latest   *:8080->80/tcp
+[usere@lx-12-5 composetest]$ docker service ps microphp
+ID                  NAME                IMAGE                                  NODE                DESIRED STATE       CURRENT STATE                ERROR               PORTS
+mydqlv29m8g4        microphp.1          revollat/micro-php-app-docker:latest   myvm1               Running             Running about a minute ago                       
+[usere@lx-12-5 composetest]$ docker service update microphp --replicas 5
+microphp
+overall progress: 5 out of 5 tasks 
+1/5: running   [==================================================>] 
+2/5: running   [==================================================>] 
+3/5: running   [==================================================>] 
+4/5: running   [==================================================>] 
+5/5: running   [==================================================>] 
+verify: Service converged 
+[usere@lx-12-5 composetest]$ docker service ps microphp
+ID                  NAME                IMAGE                                  NODE                DESIRED STATE       CURRENT STATE            ERROR               PORTS
+mydqlv29m8g4        microphp.1          revollat/micro-php-app-docker:latest   myvm1               Running             Running 12 minutes ago                       
+y6w153rs0qnf        microphp.2          revollat/micro-php-app-docker:latest   myvm1               Running             Running 29 seconds ago                       
+8nlatu2h9dt2        microphp.3          revollat/micro-php-app-docker:latest   myvm2               Running             Running 11 seconds ago                       
+y7wewgufs76i        microphp.4          revollat/micro-php-app-docker:latest   myvm3               Running             Running 11 seconds ago                       
+d8t23g0bpd6i        microphp.5          revollat/micro-php-app-docker:latest   myvm3               Running             Running 11 seconds ago                       
+[usere@lx-12-5 composetest]$ docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE                                  PORTS
+o5bi1fvkch91        microphp            replicated          5/5                 revollat/micro-php-app-docker:latest   *:8080->80/tcp
+[usere@lx-12-5 composetest]$ docker node ls
+ID                            HOSTNAME            STATUS              AVAILABILITY        MANAGER STATUS
+vds9x8e6wqd73u6c68uwhl39j *   myvm1               Ready               Active              Leader
+u903kcpz1w2cdayeqqwxz1eq0     myvm2               Ready               Active              
+pxwq768i6tzh1225a5eh4k29t     myvm3               Ready               Active              
+[usere@lx-12-5 composetest]$ 
+[usere@lx-12-5 composetest]$ docker service create \
+>   --name=viz \
+>   --publish=8080:8080/tcp \
+>   --constraint=node.role==manager \
+>   --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+>   dockersamples/visualizer
+Error response from daemon: rpc error: code = InvalidArgument desc = port '8080' is already in use by service 'microphp' (o5bi1fvkch91m8uu117mhd6il) as an ingress port
+[usere@lx-12-5 composetest]$   
+[usere@lx-12-5 composetest]$ docker service create   --name=viz   --publish=8081:8080/tcp   --constraint=node.role==manager   --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock   dockersamples/visualizer
+7as4l5eh7uzd96girz9f7yca6
+overall progress: 1 out of 1 tasks 
+1/1: running   [==================================================>] 
+verify: Service converged 
+[usere@lx-12-5 composetest]$ docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE                                  PORTS
+o5bi1fvkch91        microphp            replicated          5/5                 revollat/micro-php-app-docker:latest   *:8080->80/tcp
+7as4l5eh7uzd        viz                 replicated          1/1                 dockersamples/visualizer:latest        *:8081->8080/tcp
+[usere@lx-12-5 composetest]$ docker machine ls
+docker: 'machine' is not a docker command.
+See 'docker --help'
+[usere@lx-12-5 composetest]$ docker-machine ls
+NAME    ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+myvm1   *        virtualbox   Running   tcp://192.168.99.100:2376           v18.01.0-ce   
+myvm2   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.01.0-ce   
+myvm3   -        virtualbox   Stopped                                       Unknown       
+[usere@lx-12-5 composetest]$ docker-machine start
+Error: No machine name(s) specified and no "default" machine exists
+[usere@lx-12-5 composetest]$ docker-machine start  myvm3
+Starting "myvm3"...
+(myvm3) Check network to re-create if needed...
+(myvm3) Waiting for an IP...
+Machine "myvm3" was started.
+Waiting for SSH to be available...
+Detecting the provisioner...
+Started machines may have new IP addresses. You may need to re-run the `docker-machine env` command.
+[usere@lx-12-5 composetest]$ docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+faf4519dfcaf        bridge              bridge              local
+23ee307c38c1        docker_gwbridge     bridge              local
+67e9f6658576        host                host                local
+z8izrhly7ts8        ingress             overlay             swarm
+2ae6039b2e1f        none                null                local
+[usere@lx-12-5 composetest]$ 
+

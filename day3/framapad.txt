@@ -1,0 +1,195 @@
+://github.com/revollat/formation-docker
+
+
+LIen presentation :
+    https://docs.google.com/presentation/d/1u1AtyoRZZdREEBOLTslfYxykJ5Z5n9DyKjoOrHmMbL4/edit?usp=sharing
+    
+    
+    https://blog.jessfraz.com/post/windows-for-linux-nerds/
+    
+    https://docs.docker.com/engine/installation/
+    
+    
+
+:(){ :|: & };:
+    
+    
+    
+    https://github.com/moby/moby/blob/master/oci/defaults.go#L14-L30
+    
+    
+{
+        "defaultAction": "SCMP_ACT_ERRNO",
+        "architectures": [
+                "SCMP_ARCH_X86_64",
+                "SCMP_ARCH_X86",
+                "SCMP_ARCH_X32"
+        ],
+        "syscalls": [
+        ]
+}
+    
+    
+    https://github.com/moby/moby/blob/master/profiles/seccomp/default.json
+    https://raw.githubusercontent.com/docker/labs/master/security/seccomp/seccomp-profiles/default-no-chmod.json
+    
+    docker run -it --pid=container:web --cap-add sys_admin --cap-add sys_ptrace sjourdan/strace
+    https://hub.docker.com/r/sjourdan/strace/ 
+     
+     
+     tar cv --files-from /dev/null | docker import - vide
+     
+https://docs.docker.com/engine/reference/commandline/ps/#formatting
+
+     
+     
+     
+     https://docs.docker.com/engine/reference/commandline/ps/#filtering
+     
+     https://github.com/dockersamples/linux_tweet_app.git
+     
+     
+     
+     
+docker container run \
+--detach \
+--publish 8088:80 \
+--name linux_tweet_app \
+--mount type=bind,source="$(pwd)",target=/usr/share/nginx/html \
+linux_tweet_app:1.0
+
+
+Flask
+Redis
+
+
+https://gist.github.com/revollat/7ec1bdacea8950cb21185effd1ae4425
+
+
+
+Automatically update running Docker containers
+https://github.com/v2tec/watchtower
+
+
+         http://cnp.neclab.eu/projects/lightvm/lightvm.pdf  <= pub  VM vs CONTAINER
+
+         http://www.admin-magazine.com/HPC/Articles/Singularity-A-Container-for-HPC   <== pub HPC et container
+
+
+https://github.com/revollat/micro-php-app-docker/blob/master/Dockerfile
+
+
+https://github.com/revollat/docker-nginx-php-composer
+
+docker run -d --log-driver=journald --name nginx --net my_bridge -p 5010:80 nginx
+
+
+https://docs.docker.com/compose/install/#install-compose
+
+sudo curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+
+yum install bridge-utils
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+
+
+
+https://gist.github.com/revollat/1fff67726edae30f300830d0af51d531
+
+FROM python:3.4-alpine
+ADD . /code
+WORKDIR /code
+RUN pip install -r requirements.txt
+CMD ["python", "app.py"]
+
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+     - "5000:5000"
+  redis:
+    image: "redis:alpine"
+
+https://docs.docker.com/compose/extends/
+
+https://github.com/dockersamples/example-voting-app
+
+
+
+
+curl -L https://github.com/docker/machine/releases/download/v0.13.0/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine && \
+chmod +x /tmp/docker-machine && \sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+
+
+
+
+
+
+
+curl -L https://github.com/docker/machine/releases/download/v0.13.0/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine && \
+chmod +x /tmp/docker-machine && \sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+
+
+
+docker inspect -f '{{ .NetworkSettings.IPAddress }}'
+
+https://github.com/docker/docker.github.io/blob/master/swarm/configure-tls.md
+https://github.com/docker/docker.github.io/blob/master/swarm/plan-for-production.md
+
+
+https://github.com/atosatto/ansible-dockerswarm
+
+
+https://github.com/docker/swarm/issues/1106
+
+swarm et traefik
+https://docs.traefik.io/user-guide/swarm-mode/
+
+docker service create \
+  --name=viz \
+  --publish=8081:8080/tcp \
+  --constraint=node.role==manager \
+  --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+  --detach \
+  dockersamples/visualizer
+  
+  
+docker service create --name registry --publish published=5000,target=5000 registry:2
+  
+  https://github.com/revollat/demo-swarm
+  
+  docker-compose images
+
+  
+  https://blog.online.net/2016/07/29/docker-swarm-an-analysis-of-a-very-large-scale-container-system/
+  
+  
+  
+  
+  
+  
+docker service create \
+--name portainer \
+--publish 9000:9000 \
+--replicas=1 \
+--constraint 'node.role == manager' \
+--mount type=bind,src=//var/run/docker.sock,dst=/var/run/docker.sock \
+--mount type=bind,src=//opt/portainer,dst=/data \
+portainer/portainer \
+-H unix:///var/run/docker.sock
+
+
+
+docker service create \
+    --name portainer \
+    --publish 9000:9000 \
+    --constraint 'node.role == manager' \
+    --mount type=bind,src=//var/run/docker.sock,dst=/var/run/docker.sock \
+    portainer/portainer \
+    -H unix:///var/run/docker.sock
+
+
+
+

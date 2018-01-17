@@ -1,0 +1,105 @@
+[usere@lx-12-5 ~]$ cd Documents/training_docker/
+[usere@lx-12-5 training_docker]$ ls
+day1  day2  day3  DOCKER.pdf  DOCKER_updatedjlt.odp  README.md
+[usere@lx-12-5 training_docker]$ cd day3/composetest/
+[usere@lx-12-5 composetest]$ ls
+app.py  docker-compose.yml  Dockerfile  requirements.txt
+[usere@lx-12-5 composetest]$ docker-comppose ps
+bash: docker-comppose: commande inconnue...
+[usere@lx-12-5 composetest]$ docker-compose ps
+       Name                    Command            State           Ports         
+--------------------------------------------------------------------------------
+composetest_redis_1   docker-entrypoint.sh        Up      6379/tcp              
+                      redis ...                                                 
+composetest_web_1     python app.py               Up      0.0.0.0:5000->5000/tcp
+[usere@lx-12-5 composetest]$ ls
+app.py  docker-compose.yml  Dockerfile  requirements.txt
+[usere@lx-12-5 composetest]$ cat docker-compose.yml 
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+     - "5000:5000"
+  redis:
+    image: "redis:alpine"
+[usere@lx-12-5 composetest]$ docker-compose logs web
+Attaching to composetest_web_1
+web_1    |  * Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
+web_1    |  * Restarting with stat
+web_1    |  * Debugger is active!
+web_1    |  * Debugger PIN: 301-989-973
+web_1    | 172.20.0.1 - - [17/Jan/2018 09:34:42] "GET / HTTP/1.1" 200 -
+web_1    | 172.20.0.1 - - [17/Jan/2018 09:34:42] "GET /favicon.ico HTTP/1.1" 404 -
+web_1    | 172.20.0.1 - - [17/Jan/2018 09:34:42] "GET /favicon.ico HTTP/1.1" 404 -
+web_1    | 172.20.0.1 - - [17/Jan/2018 09:34:49] "GET / HTTP/1.1" 200 -
+[usere@lx-12-5 composetest]$ docker network ls
+NETWORK ID          NAME                  DRIVER              SCOPE
+c28a4042a091        bridge                bridge              local
+12a06a3e0190        composetest_default   bridge              local
+7bfaae541304        dev                   bridge              local
+1fe74afc691c        host                  host                local
+58167e78e7ae        none                  null                local
+f3f5b3f77d32        prod                  bridge              local
+[usere@lx-12-5 composetest]$ docker-compose stop
+Stopping composetest_web_1   ... done
+Stopping composetest_redis_1 ... done
+[usere@lx-12-5 composetest]$ docker-compose up -d 
+Starting composetest_web_1 ... 
+Starting composetest_web_1 ... done
+[usere@lx-12-5 composetest]$ docker-compose ps
+       Name                    Command            State           Ports         
+--------------------------------------------------------------------------------
+composetest_redis_1   docker-entrypoint.sh        Up      6379/tcp              
+                      redis ...                                                 
+composetest_web_1     python app.py               Up      0.0.0.0:5000->5000/tcp
+[usere@lx-12-5 composetest]$ docker-compose exec redis redis-cli
+127.0.0.1:6379> ?
+redis-cli 4.0.6
+To get help about Redis commands type:
+      "help @<group>" to get a list of commands in <group>
+      "help <command>" for help on <command>
+      "help <tab>" to get a list of possible help topics
+      "quit" to exit
+
+To set redis-cli preferences:
+      ":set hints" enable online hints
+      ":set nohints" disable online hints
+Set your preferences in ~/.redisclirc
+127.0.0.1:6379> help
+redis-cli 4.0.6
+To get help about Redis commands type:
+      "help @<group>" to get a list of commands in <group>
+      "help <command>" for help on <command>
+      "help <tab>" to get a list of possible help topics
+      "quit" to exit
+
+To set redis-cli preferences:
+      ":set hints" enable online hints
+      ":set nohints" disable online hints
+Set your preferences in ~/.redisclirc
+127.0.0.1:6379> keys *
+1) "hits"
+127.0.0.1:6379> mget hits
+1) "2"
+127.0.0.1:6379> exit
+[usere@lx-12-5 composetest]$ docker-compose stop
+Stopping composetest_web_1   ... done
+Stopping composetest_redis_1 ... done
+[usere@lx-12-5 composetest]$ vil docker-compose.yml 
+bash: vil: commande inconnue...
+[usere@lx-12-5 composetest]$ vim docker-compose.yml 
+[usere@lx-12-5 composetest]$ docker-compose up -d 
+Recreating composetest_web_1 ... 
+Recreating composetest_web_1 ... done
+[usere@lx-12-5 composetest]$ ls
+app.py  docker-compose.yml  Dockerfile  requirements.txt
+[usere@lx-12-5 composetest]$ vim app.py 
+[usere@lx-12-5 composetest]$ docker-compose ps
+       Name                    Command            State           Ports         
+--------------------------------------------------------------------------------
+composetest_redis_1   docker-entrypoint.sh        Up      6379/tcp              
+                      redis ...                                                 
+composetest_web_1     python app.py               Up      0.0.0.0:5000->5000/tcp
+[usere@lx-12-5 composetest]$ 
+

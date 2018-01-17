@@ -1,0 +1,220 @@
+[usere@lx-12-5 ~]$ 
+[usere@lx-12-5 ~]$ 
+[usere@lx-12-5 ~]$ 
+[usere@lx-12-5 ~]$ cd Documents/training_docker/day3
+[usere@lx-12-5 day3]$ mkdir stack
+[usere@lx-12-5 day3]$ cd stack
+[usere@lx-12-5 stack]$ git clone https://github.com/revollat/demo-swarm
+Cloning into 'demo-swarm'...
+remote: Counting objects: 6, done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 6 (delta 0), reused 6 (delta 0), pack-reused 0
+Unpacking objects: 100% (6/6), done.
+[usere@lx-12-5 stack]$ cd demo-swarm/
+[usere@lx-12-5 demo-swarm]$ docker-machine ls
+NAME    ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+myvm1   -        virtualbox   Running   tcp://192.168.99.100:2376           v18.01.0-ce   
+myvm2   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.01.0-ce   
+myvm3   -        virtualbox   Running   tcp://192.168.99.102:2376           v18.01.0-ce   
+[usere@lx-12-5 demo-swarm]$ eval $(docker-machine env myvm1)
+[usere@lx-12-5 demo-swarm]$ docker-machine ls
+NAME    ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+myvm1   *        virtualbox   Running   tcp://192.168.99.100:2376           v18.01.0-ce   
+myvm2   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.01.0-ce   
+myvm3   -        virtualbox   Running   tcp://192.168.99.102:2376           v18.01.0-ce   
+[usere@lx-12-5 demo-swarm]$ ls
+app.py  docker-compose.yml  Dockerfile  requirements.txt
+[usere@lx-12-5 demo-swarm]$ docker-compose up -d
+WARNING: The Docker Engine you're using is running in swarm mode.
+
+Compose does not use swarm mode to deploy services to multiple nodes in a swarm. All containers will be scheduled on the current node.
+
+To deploy your application across the swarm, use `docker stack deploy`.
+
+Creating network "demoswarm_default" with the default driver
+Building web
+Step 1/5 : FROM python:3.4-alpine
+3.4-alpine: Pulling from library/python
+81033e7c1d6a: Pull complete
+9b61101706a6: Pull complete
+d34c54b4be74: Pull complete
+5f11014aa0b0: Pull complete
+cf4deabc71b9: Pull complete
+Digest: sha256:02c9590429569449b10545e7f4815665dedcca363e708e66ea0d204f6812bbcc
+Status: Downloaded newer image for python:3.4-alpine
+ ---> 95dcd629cec6
+Step 2/5 : ADD . /code
+ ---> 37dad7b3e06b
+Step 3/5 : WORKDIR /code
+Removing intermediate container 15f90cbcbb51
+ ---> d2eef8100e54
+Step 4/5 : RUN pip install -r requirements.txt
+ ---> Running in 203f07e4b352
+Collecting flask (from -r requirements.txt (line 1))
+  Downloading Flask-0.12.2-py2.py3-none-any.whl (83kB)
+Collecting redis (from -r requirements.txt (line 2))
+  Downloading redis-2.10.6-py2.py3-none-any.whl (64kB)
+Collecting Jinja2>=2.4 (from flask->-r requirements.txt (line 1))
+  Downloading Jinja2-2.10-py2.py3-none-any.whl (126kB)
+Collecting click>=2.0 (from flask->-r requirements.txt (line 1))
+  Downloading click-6.7-py2.py3-none-any.whl (71kB)
+Collecting Werkzeug>=0.7 (from flask->-r requirements.txt (line 1))
+  Downloading Werkzeug-0.14.1-py2.py3-none-any.whl (322kB)
+Collecting itsdangerous>=0.21 (from flask->-r requirements.txt (line 1))
+  Downloading itsdangerous-0.24.tar.gz (46kB)
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.4->flask->-r requirements.txt (line 1))
+  Downloading MarkupSafe-1.0.tar.gz
+Building wheels for collected packages: itsdangerous, MarkupSafe
+  Running setup.py bdist_wheel for itsdangerous: started
+  Running setup.py bdist_wheel for itsdangerous: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/fc/a8/66/24d655233c757e178d45dea2de22a04c6d92766abfb741129a
+  Running setup.py bdist_wheel for MarkupSafe: started
+  Running setup.py bdist_wheel for MarkupSafe: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/88/a7/30/e39a54a87bcbe25308fa3ca64e8ddc75d9b3e5afa21ee32d57
+Successfully built itsdangerous MarkupSafe
+Installing collected packages: MarkupSafe, Jinja2, click, Werkzeug, itsdangerous, flask, redis
+Successfully installed Jinja2-2.10 MarkupSafe-1.0 Werkzeug-0.14.1 click-6.7 flask-0.12.2 itsdangerous-0.24 redis-2.10.6
+Removing intermediate container 203f07e4b352
+ ---> 2cb29926e9f7
+Step 5/5 : CMD ["python", "app.py"]
+ ---> Running in 23aa05f366fe
+Removing intermediate container 23aa05f366fe
+ ---> 3b0086a8a86c
+Successfully built 3b0086a8a86c
+Successfully tagged 127.0.0.1:5000/stackdemo:latest
+WARNING: Image for service web was built because it did not already exist. To rebuild this image you must use `docker-compose build` or `docker-compose up --build`.
+Pulling redis (redis:alpine)...
+alpine: Pulling from library/redis
+605ce1bd3f31: Pull complete
+d12d456b03b7: Pull complete
+b6e6ee69c5e2: Pull complete
+813ea0248ee4: Pull complete
+62208b7f07e1: Pull complete
+35b7abefa067: Pull complete
+Digest: sha256:a5fd9334b28d6afdc8b84aad8a01056d8d1d849cb5a744919caf40d5b57597b2
+Status: Downloaded newer image for redis:alpine
+Creating demoswarm_web_1   ... done
+Creating demoswarm_redis_1 ... done
+[usere@lx-12-5 demo-swarm]$ docker-machine ls
+NAME    ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+myvm1   *        virtualbox   Running   tcp://192.168.99.100:2376           v18.01.0-ce   
+myvm2   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.01.0-ce   
+myvm3   -        virtualbox   Running   tcp://192.168.99.102:2376           v18.01.0-ce   
+[usere@lx-12-5 demo-swarm]$ docker service create --name registry --publish published=5000,target=5000 registry:2
+nojye07mjdgzcbkvbozzac8lu
+overall progress: 1 out of 1 tasks 
+1/1: running   [==================================================>] 
+verify: Service converged 
+[usere@lx-12-5 demo-swarm]$ docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE                                  PORTS
+o5bi1fvkch91        microphp            replicated          5/5                 revollat/micro-php-app-docker:latest   *:8080->80/tcp
+nojye07mjdgz        registry            replicated          1/1                 registry:2                             *:5000->5000/tcp
+7as4l5eh7uzd        viz                 replicated          1/1                 dockersamples/visualizer:latest        *:8081->8080/tcp
+[usere@lx-12-5 demo-swarm]$ docker image ls
+REPOSITORY                      TAG                 IMAGE ID            CREATED             SIZE
+127.0.0.1:5000/stackdemo        latest              3b0086a8a86c        9 minutes ago       93MB
+redis                           alpine              3a997d84eb7e        7 days ago          26.9MB
+python                          3.4-alpine          95dcd629cec6        7 days ago          82.6MB
+nginx                           alpine              bb00c21b4edf        7 days ago          16.8MB
+dockersamples/visualizer        <none>              52bd062a7df8        2 weeks ago         153MB
+revollat/micro-php-app-docker   <none>              74d1fc40c34f        2 years ago         16.3MB
+[usere@lx-12-5 demo-swarm]$ docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE                                  PORTS
+o5bi1fvkch91        microphp            replicated          5/5                 revollat/micro-php-app-docker:latest   *:8080->80/tcp
+nojye07mjdgz        registry            replicated          1/1                 registry:2                             *:5000->5000/tcp
+7as4l5eh7uzd        viz                 replicated          1/1                 dockersamples/visualizer:latest        *:8081->8080/tcp
+[usere@lx-12-5 demo-swarm]$ docker-machine ls
+NAME    ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+myvm1   *        virtualbox   Running   tcp://192.168.99.100:2376           v18.01.0-ce   
+myvm2   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.01.0-ce   
+myvm3   -        virtualbox   Running   tcp://192.168.99.102:2376           v18.01.0-ce   
+[usere@lx-12-5 demo-swarm]$ docker-compose push
+Pushing web (127.0.0.1:5000/stackdemo:latest)...
+The push refers to repository [127.0.0.1:5000/stackdemo]
+15d96cf3f76d: Pushed
+6f0e5e53e5bc: Pushed
+4f86eacf4310: Pushed
+6d6e45c0ba2c: Pushed
+7cf2b71d5025: Pushed
+a7d53ea16e81: Pushed
+e53f74215d12: Pushed
+latest: digest: sha256:7dd1367623168dfb8d1268df4a2235b53e5d8492b485fb15f105c7f93ef36bb8 size: 1787
+[usere@lx-12-5 demo-swarm]$ ls
+app.py  docker-compose.yml  Dockerfile  requirements.txt
+[usere@lx-12-5 demo-swarm]$ cat docker-compose.yml 
+version: '3'
+
+services:
+  web:
+    image: 127.0.0.1:5000/stackdemo
+    build: .
+    ports:
+      - "8000:8000"
+  redis:
+    image: redis:alpine
+[usere@lx-12-5 demo-swarm]$ docker-machine ls
+NAME    ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+myvm1   *        virtualbox   Running   tcp://192.168.99.100:2376           v18.01.0-ce   
+myvm2   -        virtualbox   Running   tcp://192.168.99.101:2376           v18.01.0-ce   
+myvm3   -        virtualbox   Running   tcp://192.168.99.102:2376           v18.01.0-ce   
+[usere@lx-12-5 demo-swarm]$ docker stack dploy --compose-file docker-compose.yml stackdemo
+unknown flag: --compose-file
+See 'docker stack --help'.
+
+Usage:	docker stack COMMAND
+
+Manage Docker stacks
+
+Options:
+
+
+Commands:
+  deploy      Deploy a new stack or update an existing stack
+  ls          List stacks
+  ps          List the tasks in the stack
+  rm          Remove one or more stacks
+  services    List the services in the stack
+
+Run 'docker stack COMMAND --help' for more information on a command.
+
+[usere@lx-12-5 demo-swarm]$ docker stack deploy --compose-file docker-compose.yml stackdemo
+Ignoring unsupported options: build
+
+Creating network stackdemo_default
+Creating service stackdemo_web
+Creating service stackdemo_redis
+[usere@lx-12-5 demo-swarm]$ docker stack ls
+NAME                SERVICES
+stackdemo           2
+[usere@lx-12-5 demo-swarm]$ docker stack ps stackdemo
+ID                  NAME                IMAGE                             NODE                DESIRED STATE       CURRENT STATE                ERROR               PORTS
+wbm22sku338v        stackdemo_redis.1   redis:alpine                      myvm3               Running             Running about a minute ago                       
+4ug6ybldawdj        stackdemo_web.1     127.0.0.1:5000/stackdemo:latest   myvm3               Running             Running about a minute ago                       
+[usere@lx-12-5 demo-swarm]$ docker-machine ssh myvm1 "ls"
+log.log
+[usere@lx-12-5 demo-swarm]$ vim docker-compose.yml 
+[usere@lx-12-5 demo-swarm]$ docker stack rm stackdemo
+Removing service stackdemo_redis
+Removing service stackdemo_web
+Removing network stackdemo_default
+[usere@lx-12-5 demo-swarm]$ docker stack ls
+NAME                SERVICES
+[usere@lx-12-5 demo-swarm]$ docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE                                  PORTS
+o5bi1fvkch91        microphp            replicated          5/5                 revollat/micro-php-app-docker:latest   *:8080->80/tcp
+nojye07mjdgz        registry            replicated          1/1                 registry:2                             *:5000->5000/tcp
+7as4l5eh7uzd        viz                 replicated          1/1                 dockersamples/visualizer:latest        *:8081->8080/tcp
+[usere@lx-12-5 demo-swarm]$ docker service rm o5bi1fvkch91
+o5bi1fvkch91
+[usere@lx-12-5 demo-swarm]$ docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE                             PORTS
+nojye07mjdgz        registry            replicated          1/1                 registry:2                        *:5000->5000/tcp
+7as4l5eh7uzd        viz                 replicated          1/1                 dockersamples/visualizer:latest   *:8081->8080/tcp
+[usere@lx-12-5 demo-swarm]$ docker stack deploy --compose-file docker-compose.yml stackdemo
+Ignoring unsupported options: build
+
+Creating network stackdemo_default
+Creating service stackdemo_web
+Creating service stackdemo_redis
+[usere@lx-12-5 demo-swarm]$ 
+

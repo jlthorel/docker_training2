@@ -1,0 +1,42 @@
+[usere@lx-12-5 ~]$ su -
+Mot de passe : 
+Dernière connexion : mercredi 17 janvier 2018 à 09:02:12 CET sur :0
+[root@lx-12-5 ~]# vi /etc/resolv.conf 
+[root@lx-12-5 ~]# yum install bridge-utils
+Modules complémentaires chargés : fastestmirror, langpacks
+adobe-linux-x86_64                                       | 2.9 kB     00:00     
+base                                                     | 3.6 kB     00:00     
+docker-ce-stable                                         | 2.9 kB     00:00     
+epel/x86_64/metalink                                     |  24 kB     00:00     
+epel                                                     | 4.7 kB     00:00     
+extras                                                   | 3.4 kB     00:00     
+updates                                                  | 3.4 kB     00:00     
+virtualbox                                               | 1.1 kB     00:00     
+(1/3): epel/x86_64/updateinfo                              | 870 kB   00:00     
+(2/3): virtualbox/7/x86_64/primary                         | 9.4 kB   00:00     
+(3/3): epel/x86_64/primary_db                              | 6.2 MB   00:03     
+Loading mirror speeds from cached hostfile
+ * base: miroir.univ-paris13.fr
+ * epel: www.mirrorservice.org
+ * extras: miroir.univ-paris13.fr
+ * updates: mirrors.standaloneinstaller.com
+virtualbox                                                                48/48
+Le paquet bridge-utils-1.5-9.el7.x86_64 est déjà installé dans sa dernière version
+Rien à faire
+[root@lx-12-5 ~]# curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   617    0   617    0     0   1148      0 --:--:-- --:--:-- --:--:--  1148
+100 8280k  100 8280k    0     0  1121k      0  0:00:07  0:00:07 --:--:-- 1721k
+[root@lx-12-5 ~]# chmod +x /usr/local/bin/docker-compose
+[root@lx-12-5 ~]# curl -L https://github.com/docker/machine/releases/download/v0.13.0/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine && \
+> chmod +x /tmp/docker-machine && \
+> sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   617    0   617    0     0   1172      0 --:--:-- --:--:-- --:--:--  1173
+100 25.3M  100 25.3M    0     0  1685k      0  0:00:15  0:00:15 --:--:-- 2008k
+[root@lx-12-5 ~]# docker-machine version
+docker-machine version 0.13.0, build 9ba6da9
+[root@lx-12-5 ~]# 
+

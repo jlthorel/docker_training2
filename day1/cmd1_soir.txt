@@ -1,0 +1,1502 @@
+[usere@lx-12-5 ~]$ su - usere
+Mot de passe : 
+Dernière connexion : lundi 15 janvier 2018 à 09:24:22 CET sur :2
+[usere@lx-12-5 ~]$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+[usere@lx-12-5 ~]$ pwd
+/home/usere
+[usere@lx-12-5 ~]$ ls
+Bureau  Documents  Images  Modèles  Musique  Public  Téléchargements  Vidéos
+[usere@lx-12-5 ~]$ cd Documents/
+[usere@lx-12-5 Documents]$ ls
+[usere@lx-12-5 Documents]$ mkdir training
+[usere@lx-12-5 Documents]$ echo "# docker_training" >> README.md
+[usere@lx-12-5 Documents]$ ls
+README.md  training
+[usere@lx-12-5 Documents]$ rm README.md 
+[usere@lx-12-5 Documents]$ mv training/ training_docker
+[usere@lx-12-5 Documents]$ cd training_docker/
+[usere@lx-12-5 training_docker]$ echo "# docker_training" >> README.md
+[usere@lx-12-5 training_docker]$ mkdir day1
+[usere@lx-12-5 training_docker]$ cd day1
+[usere@lx-12-5 day1]$ mkdir tp1
+[usere@lx-12-5 day1]$ cd tp1
+[usere@lx-12-5 tp1]$ cd ..
+[usere@lx-12-5 day1]$ rm -r tp1
+[usere@lx-12-5 day1]$ mkdir layers
+[usere@lx-12-5 day1]$ pwd
+/home/usere/Documents/training_docker/day1
+[usere@lx-12-5 day1]$ vim Dockerfile.base
+[usere@lx-12-5 day1]$ pwd
+/home/usere/Documents/training_docker/day1
+[usere@lx-12-5 day1]$ cp Dockerfile.base ./layers/
+[usere@lx-12-5 day1]$ cd layers/
+[usere@lx-12-5 layers]$ cp Dockerfile.base  Dockerfile
+[usere@lx-12-5 layers]$ vim Dockerfile
+[usere@lx-12-5 layers]$ cat Dockerfile
+FROM alpine
+RUN touch /test
+RUN touch /autre-Fichier
+	
+
+[usere@lx-12-5 layers]$ cat Dockerfile.base 
+FROM alpine
+RUN touch /test
+
+[usere@lx-12-5 layers]$ docker image build -t jthorel/lauers1 -f Dockerfile.base .
+Sending build context to Docker daemon  3.072kB
+Step 1/2 : FROM alpine
+latest: Pulling from library/alpine
+ff3a5c916c92: Pull complete 
+Digest: sha256:7df6db5aa61ae9480f52f0b3a06a140ab98d427f86d8d5de0bedab9b8df6b1c0
+Status: Downloaded newer image for alpine:latest
+ ---> 3fd9065eaf02
+Step 2/2 : RUN touch /test
+ ---> Running in 20099a430958
+Removing intermediate container 20099a430958
+ ---> d6be31548de4
+Successfully built d6be31548de4
+Successfully tagged jthorel/lauers1:latest
+[usere@lx-12-5 layers]$ docker image build -t jthorel/lauers .Sending build context to Docker daemon  3.072kB
+Step 1/3 : FROM alpine
+ ---> 3fd9065eaf02
+Step 2/3 : RUN touch /test
+ ---> Using cache
+ ---> d6be31548de4
+Step 3/3 : RUN touch /autre-Fichier
+ ---> Running in 3ce6c5a79397
+Removing intermediate container 3ce6c5a79397
+ ---> df96fb923935
+Successfully built df96fb923935
+Successfully tagged jthorel/lauers:latest
+[usere@lx-12-5 layers]$ docker image build -t jthorel/layers1 -f Dockerfile.base .
+Sending build context to Docker daemon  3.072kB
+Step 1/2 : FROM alpine
+ ---> 3fd9065eaf02
+Step 2/2 : RUN touch /test
+ ---> Using cache
+ ---> d6be31548de4
+Successfully built d6be31548de4
+Successfully tagged jthorel/layers1:latest
+[usere@lx-12-5 layers]$ docker image build -t jthorel/layers2  .Sending build context to Docker daemon  3.072kB
+Step 1/3 : FROM alpine
+ ---> 3fd9065eaf02
+Step 2/3 : RUN touch /test
+ ---> Using cache
+ ---> d6be31548de4
+Step 3/3 : RUN touch /autre-Fichier
+ ---> Using cache
+ ---> df96fb923935
+Successfully built df96fb923935
+Successfully tagged jthorel/layers2:latest
+[usere@lx-12-5 layers]$ docker image history jthorel/layers1
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+d6be31548de4        5 minutes ago       /bin/sh -c touch /test                          0B                  
+3fd9065eaf02        5 days ago          /bin/sh -c #(nop)  CMD ["/bin/sh"]              0B                  
+<missing>           5 days ago          /bin/sh -c #(nop) ADD file:093f0723fa46f6cdb…   4.14MB              
+[usere@lx-12-5 layers]$ docker image history jthorel/layers2
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+df96fb923935        2 minutes ago       /bin/sh -c touch /autre-Fichier                 0B                  
+d6be31548de4        6 minutes ago       /bin/sh -c touch /test                          0B                  
+3fd9065eaf02        5 days ago          /bin/sh -c #(nop)  CMD ["/bin/sh"]              0B                  
+<missing>           5 days ago          /bin/sh -c #(nop) ADD file:093f0723fa46f6cdb…   4.14MB              
+[usere@lx-12-5 layers]$ docker container run -it jthorel/layers2
+/ # ps aux
+PID   USER     TIME   COMMAND
+    1 root       0:00 /bin/sh
+    7 root       0:00 ps aux
+/ # touch /my-new-file
+/ # [usere@lx-12-5 layers]$ docker container ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+353070dc627d        jthorel/layers2     "/bin/sh"           2 minutes ago       Up 2 minutes                            distracted_kowalevski
+[usere@lx-12-5 layers]$ ls
+Dockerfile  Dockerfile.base
+[usere@lx-12-5 layers]$ docker container diff 353070dc627d
+A /my-new-file
+C /root
+A /root/.ash_history
+[usere@lx-12-5 layers]$ docker container commit 353070dc627d jthorel/layers3
+sha256:6f152b535efbd86501b6c48e07f97dc01b19a667a8a8a134f7da133d6ec43544
+[usere@lx-12-5 layers]$ docker image history jthorel/layers2
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+df96fb923935        14 minutes ago      /bin/sh -c touch /autre-Fichier                 0B                  
+d6be31548de4        18 minutes ago      /bin/sh -c touch /test                          0B                  
+3fd9065eaf02        5 days ago          /bin/sh -c #(nop)  CMD ["/bin/sh"]              0B                  
+<missing>           5 days ago          /bin/sh -c #(nop) ADD file:093f0723fa46f6cdb…   4.14MB              
+[usere@lx-12-5 layers]$ docker image history jthorel/layers3
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+6f152b535efb        38 seconds ago      /bin/sh                                         26B                 
+df96fb923935        14 minutes ago      /bin/sh -c touch /autre-Fichier                 0B                  
+d6be31548de4        18 minutes ago      /bin/sh -c touch /test                          0B                  
+3fd9065eaf02        5 days ago          /bin/sh -c #(nop)  CMD ["/bin/sh"]              0B                  
+<missing>           5 days ago          /bin/sh -c #(nop) ADD file:093f0723fa46f6cdb…   4.14MB              
+[usere@lx-12-5 layers]$ docker pull ubuntu
+Using default tag: latest
+latest: Pulling from library/ubuntu
+50aff78429b1: Pull complete 
+f6d82e297bce: Pull complete 
+275abb2c8a6f: Pull complete 
+9f15a39356d6: Pull complete 
+fc0342a94c89: Pull complete 
+Digest: sha256:fbaf303d18563e57a3c1a0005356ad102509b60884f3aa89ef9a90c0ea5d1212
+Status: Downloaded newer image for ubuntu:latest
+[usere@lx-12-5 layers]$ docker login
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username: jthorel
+Password: 
+Login Succeeded
+[usere@lx-12-5 layers]$ docker image push jthorel/layers1
+The push refers to repository [docker.io/jthorel/layers1]
+ee265fce4a88: Pushed 
+cd7100a72410: Mounted from library/alpine 
+latest: digest: sha256:77470dae7864e5cae8f958841857a6fd67c9c6e757561c5273c327f425915cfb size: 734
+[usere@lx-12-5 layers]$ cd ..
+[usere@lx-12-5 day1]$ mkdir cgroups
+[usere@lx-12-5 day1]$ cd cgroups/
+[usere@lx-12-5 cgroups]$ ls
+[usere@lx-12-5 cgroups]$ ls
+[usere@lx-12-5 cgroups]$ pwd
+/home/usere/Documents/training_docker/day1/cgroups
+[usere@lx-12-5 cgroups]$ vim Dockerfile
+[usere@lx-12-5 cgroups]$ docker image build -t jthorel/stress .
+Sending build context to Docker daemon  2.048kB
+Step 1/3 : FROM ubuntu
+ ---> 00fd29ccc6f1
+Step 2/3 : RUN apt-get update && apt-get install -y stress
+ ---> Running in 238135b20400
+Get:1 http://archive.ubuntu.com/ubuntu xenial InRelease [247 kB]
+Get:2 http://security.ubuntu.com/ubuntu xenial-security InRelease [102 kB]
+Get:3 http://security.ubuntu.com/ubuntu xenial-security/universe Sources [56.8 kB]
+Get:4 http://archive.ubuntu.com/ubuntu xenial-updates InRelease [102 kB]
+Get:5 http://security.ubuntu.com/ubuntu xenial-security/main amd64 Packages [539 kB]
+Get:6 http://archive.ubuntu.com/ubuntu xenial-backports InRelease [102 kB]
+Get:7 http://archive.ubuntu.com/ubuntu xenial/universe Sources [9802 kB]
+Get:8 http://security.ubuntu.com/ubuntu xenial-security/restricted amd64 Packages [12.7 kB]
+Get:9 http://security.ubuntu.com/ubuntu xenial-security/universe amd64 Packages [245 kB]
+Get:10 http://security.ubuntu.com/ubuntu xenial-security/multiverse amd64 Packages [3492 B]
+Get:11 http://archive.ubuntu.com/ubuntu xenial/main amd64 Packages [1558 kB]
+Get:12 http://archive.ubuntu.com/ubuntu xenial/restricted amd64 Packages [14.1 kB]
+Get:13 http://archive.ubuntu.com/ubuntu xenial/universe amd64 Packages [9827 kB]
+Get:14 http://archive.ubuntu.com/ubuntu xenial/multiverse amd64 Packages [176 kB]
+Get:15 http://archive.ubuntu.com/ubuntu xenial-updates/universe Sources [234 kB]
+Get:16 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 Packages [903 kB]
+Get:17 http://archive.ubuntu.com/ubuntu xenial-updates/restricted amd64 Packages [13.1 kB]
+Get:18 http://archive.ubuntu.com/ubuntu xenial-updates/universe amd64 Packages [735 kB]
+Get:19 http://archive.ubuntu.com/ubuntu xenial-updates/multiverse amd64 Packages [18.5 kB]
+Get:20 http://archive.ubuntu.com/ubuntu xenial-backports/main amd64 Packages [5162 B]
+Get:21 http://archive.ubuntu.com/ubuntu xenial-backports/universe amd64 Packages [7146 B]
+Fetched 24.7 MB in 24s (996 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following NEW packages will be installed:
+  stress
+0 upgraded, 1 newly installed, 0 to remove and 1 not upgraded.
+Need to get 16.7 kB of archives.
+After this operation, 75.8 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu xenial/universe amd64 stress amd64 1.0.4-1 [16.7 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 16.7 kB in 0s (253 kB/s)
+Selecting previously unselected package stress.
+(Reading database ... 4768 files and directories currently installed.)
+Preparing to unpack .../stress_1.0.4-1_amd64.deb ...
+Unpacking stress (1.0.4-1) ...
+Setting up stress (1.0.4-1) ...
+Removing intermediate container 238135b20400
+ ---> 01941c8852b3
+Step 3/3 : CMD stress -c 2
+ ---> Running in 56afbe64dd6c
+Removing intermediate container 56afbe64dd6c
+ ---> 4b47e03f7836
+Successfully built 4b47e03f7836
+Successfully tagged jthorel/stress:latest
+[usere@lx-12-5 cgroups]$ docker image ls
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+jthorel/stress      latest              4b47e03f7836        2 minutes ago       150MB
+jthorel/layers3     latest              6f152b535efb        2 hours ago         4.14MB
+jthorel/layers2     latest              df96fb923935        3 hours ago         4.14MB
+jthorel/lauers      latest              df96fb923935        3 hours ago         4.14MB
+jthorel/lauers1     latest              d6be31548de4        3 hours ago         4.14MB
+jthorel/layers1     latest              d6be31548de4        3 hours ago         4.14MB
+alpine              latest              3fd9065eaf02        5 days ago          4.14MB
+ubuntu              latest              00fd29ccc6f1        4 weeks ago         111MB
+[usere@lx-12-5 cgroups]$ docker run --name stress -d jthorel/stress
+6d927e3b490b531dc68e93b0786a73d44f332e7be2b4c137178b30a2d5538c73
+[usere@lx-12-5 cgroups]$ docker  container ls
+CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS               NAMES
+6d927e3b490b        jthorel/stress      "/bin/sh -c 'stress …"   About a minute ago   Up About a minute                       stress
+353070dc627d        jthorel/layers2     "/bin/sh"                3 hours ago          Up 3 hours                              distracted_kowalevski
+[usere@lx-12-5 cgroups]$ docker container rm --force stress
+stress
+[usere@lx-12-5 cgroups]$ docker run --name stress --cpuset-cpus 0 -d jthorel/stress
+f0c37727b0d9eba3527582291f100c44063b1c5236e261b432a9ee7c06632c78
+[usere@lx-12-5 cgroups]$ docker container rm --force stress 
+stress
+[usere@lx-12-5 cgroups]$ docker run --name stress --cpuset-cpus 0 --cpu-shares 256 -d jthorel/stress
+c8b8a90d66ef7d43c9bfa797ba9002d14f87bfab8b0f270c66908a9e9ef6c066
+[usere@lx-12-5 cgroups]$ docker run --name stress2 --cpuset-cpus 0 --cpu-shares 768 -d jthorel/stress
+ca432159e015850257c9c5fd17ceb836c3d76ec458ed4440f35682eeef62fc3d
+[usere@lx-12-5 cgroups]$ docker container rm --force stress 
+stress
+[usere@lx-12-5 cgroups]$ docker container rm --force stress2 
+stress2
+[usere@lx-12-5 cgroups]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+353070dc627d        jthorel/layers2     "/bin/sh"           3 hours ago         Up 3 hours                              distracted_kowalevski
+[usere@lx-12-5 cgroups]$ docker rm --force 353070dc627d
+353070dc627d
+[usere@lx-12-5 cgroups]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+[usere@lx-12-5 cgroups]$ docker run -it --pids-limit 200 ubuntu
+root@a2d2d902547a:/# :(){ :|: & };:
+[1] 12
+root@a2d2d902547a:/# bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+bash: fork: retry: No child processes
+bash: fork: retry: Resource temporarily unavailable
+   
+[1]+  Done                    : | :
+root@a2d2d902547a:/# exit
+exit
+[usere@lx-12-5 cgroups]$ su root
+Mot de passe : 
+[root@lx-12-5 cgroups]# getcap /usr/bin/ping
+/usr/bin/ping = cap_net_admin,cap_net_raw+p
+[root@lx-12-5 cgroups]# exit
+exit
+[usere@lx-12-5 cgroups]$ docker run -it alpine chown nobody  /
+[usere@lx-12-5 cgroups]$ docker run -it --cap-drop ALL --cap-add CHOWN  alpine chown nobody  /
+[usere@lx-12-5 cgroups]$ docker run -it --cap-drop ALL   alpine chown nobody  /
+chown: /: Operation not permitted
+[usere@lx-12-5 cgroups]$ docker run -it --cap-drop  CHOWN  alpine chown nobody  /
+chown: /: Operation not permitted
+[usere@lx-12-5 cgroups]$ docker run -it  --cap-add CHOWN -u nobody  alpine chown nobody  /
+chown: /: Operation not permitted
+[usere@lx-12-5 cgroups]$ cd ../
+[usere@lx-12-5 day1]$ mkdir seccomp
+[usere@lx-12-5 day1]$ ls
+cgroups  cmd.txt  Dockerfile.base  layers  seccomp
+[usere@lx-12-5 day1]$ cd seccomp/
+[usere@lx-12-5 seccomp]$ vim deny.json
+[usere@lx-12-5 seccomp]$ docker run -it --cap-add ALL --security-opt apparmor=unconfined --security-opt seccomp=deny.json alpine sh
+docker: Error response from daemon: cannot start a stopped process: unknown.
+[usere@lx-12-5 seccomp]$ ls
+deny.json
+[usere@lx-12-5 seccomp]$ vim default.json
+[usere@lx-12-5 seccomp]$ docker run -it --security-opt seccomp=default.json  alpine sh
+/ # chmod 777 / -v
+chmod: /: Operation not permitted
+/ # exit
+[usere@lx-12-5 seccomp]$ docker run -d -P --name web nginx:alpine
+Unable to find image 'nginx:alpine' locally
+alpine: Pulling from library/nginx
+550fe1bea624: Pull complete 
+d421ba34525b: Pull complete 
+fdcbcb327323: Pull complete 
+bfbcec2fc4d5: Pull complete 
+Digest: sha256:c8ff0187cc75e1f5002c7ca9841cb191d33c4080f38140b9d6f07902ababbe66
+Status: Downloaded newer image for nginx:alpine
+f6bbdf279b98d38e48618b2dd74d1c9b78c322a414ace64140c4150d6f9bdb57
+[usere@lx-12-5 seccomp]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                   NAMES
+f6bbdf279b98        nginx:alpine        "nginx -g 'daemon of…"   41 seconds ago      Up 40 seconds       0.0.0.0:32768->80/tcp   web
+[usere@lx-12-5 seccomp]$ ps aux | grep nginx
+root     19874  0.0  0.0  13728  2520 ?        Ss   16:14   0:00 nginx: master process nginx -g daemon off;
+100      19911  0.0  0.0  14176  1252 ?        S    16:14   0:00 nginx: worker process
+usere    19969  0.0  0.0 112664   968 pts/2    S+   16:15   0:00 grep --color=auto nginx
+[usere@lx-12-5 seccomp]$     docker run -it --pid=container:web --cap-add sys_admin --cap-add sys_ptrace sjourdan/strace
+Unable to find image 'sjourdan/strace:latest' locally
+latest: Pulling from sjourdan/strace
+627beaf3eaaf: Pull complete 
+67e41dd407d2: Pull complete 
+Digest: sha256:4afdc3de0f2f2eed8f67e15d3754051b031ab2c249b40d08232a987abb287326
+Status: Downloaded newer image for sjourdan/strace:latest
+strace: Process 1 attached
+rt_sigsuspend([], 8
+)                    = ? ERESTARTNOHAND (To be restarted if no handler)
+--- SIGHUP {si_signo=SIGHUP, si_code=SI_USER, si_pid=0, si_uid=0} ---
+rt_sigreturn({mask=[HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO]}) = -1 EINTR (Interrupted system call)
+uname({sysname="Linux", nodename="f6bbdf279b98", ...}) = 0
+brk(0x7f9201d42000)                     = 0x7f9201d42000
+open("/etc/nginx/nginx.conf", O_RDONLY) = 8
+fstat(8, {st_mode=S_IFREG|0664, st_size=643, ...}) = 0
+pread64(8, "\nuser  nginx;\nworker_processes  "..., 643, 0) = 643
+geteuid()                               = 0
+open("/etc/passwd", O_RDONLY|O_CLOEXEC) = 9
+fcntl(9, F_SETFD, FD_CLOEXEC)           = 0
+fcntl(9, F_SETFD, FD_CLOEXEC)           = 0
+readv(9, [{iov_base="", iov_len=0}, {iov_base="root:x:0:0:root:/root:/bin/ash\nb"..., iov_len=1024}], 2) = 1024
+readv(9, [{iov_base="", iov_len=0}, {iov_base="sbin/nologin\nntp:x:123:123:NTP:/"..., iov_len=1024}], 2) = 261
+close(9)                                = 0
+open("/etc/group", O_RDONLY|O_CLOEXEC)  = 9
+fcntl(9, F_SETFD, FD_CLOEXEC)           = 0
+fcntl(9, F_SETFD, FD_CLOEXEC)           = 0
+readv(9, [{iov_base="", iov_len=0}, {iov_base="root:x:0:root\nbin:x:1:root,bin,d"..., iov_len=1024}], 2) = 715
+close(9)                                = 0
+epoll_create1(0)                        = 9
+close(9)                                = 0
+brk(0x7f9201d44000)                     = 0x7f9201d44000
+brk(0x7f9201d46000)                     = 0x7f9201d46000
+brk(0x7f9201d4b000)                     = 0x7f9201d4b000
+brk(0x7f9201d50000)                     = 0x7f9201d50000
+open("/etc/nginx/mime.types", O_RDONLY) = 9
+fstat(9, {st_mode=S_IFREG|0644, st_size=5170, ...}) = 0
+pread64(9, "\ntypes {\n    text/html          "..., 4096, 0) = 4096
+pread64(9, "application/octet-stream        "..., 1074, 4096) = 1074
+close(9)                                = 0
+open("/", O_RDONLY|O_DIRECTORY|O_CLOEXEC) = 9
+fcntl(9, F_SETFD, FD_CLOEXEC)           = 0
+getdents64(9, /* 19 entries */, 2048)   = 472
+open("/etc", O_RDONLY|O_DIRECTORY|O_CLOEXEC) = 10
+fcntl(10, F_SETFD, FD_CLOEXEC)          = 0
+getdents64(10, /* 42 entries */, 2048)  = 1296
+open("/etc/nginx", O_RDONLY|O_DIRECTORY|O_CLOEXEC) = 11
+fcntl(11, F_SETFD, FD_CLOEXEC)          = 0
+getdents64(11, /* 19 entries */, 2048)  = 656
+open("/etc/nginx/conf.d", O_RDONLY|O_DIRECTORY|O_CLOEXEC) = 12
+fcntl(12, F_SETFD, FD_CLOEXEC)          = 0
+getdents64(12, /* 3 entries */, 2048)   = 80
+getdents64(12, /* 0 entries */, 2048)   = 0
+close(12)                               = 0
+getdents64(11, /* 0 entries */, 2048)   = 0
+close(11)                               = 0
+getdents64(10, /* 0 entries */, 2048)   = 0
+close(10)                               = 0
+getdents64(9, /* 0 entries */, 2048)    = 0
+close(9)                                = 0
+open("/etc/nginx/conf.d/default.conf", O_RDONLY) = 9
+fstat(9, {st_mode=S_IFREG|0664, st_size=1093, ...}) = 0
+pread64(9, "server {\n    listen       80;\n  "..., 1093, 0) = 1093
+brk(0x7f9201d55000)                     = 0x7f9201d55000
+close(9)                                = 0
+brk(0x7f9201d5a000)                     = 0x7f9201d5a000
+close(8)                                = 0
+mkdir("/var/cache/nginx/client_temp", 0700) = -1 EEXIST (File exists)
+stat("/var/cache/nginx/client_temp", {st_mode=S_IFDIR|S_ISGID|0700, st_size=6, ...}) = 0
+mkdir("/var/cache/nginx/proxy_temp", 0700) = -1 EEXIST (File exists)
+stat("/var/cache/nginx/proxy_temp", {st_mode=S_IFDIR|S_ISGID|0700, st_size=6, ...}) = 0
+mkdir("/var/cache/nginx/fastcgi_temp", 0700) = -1 EEXIST (File exists)
+stat("/var/cache/nginx/fastcgi_temp", {st_mode=S_IFDIR|S_ISGID|0700, st_size=6, ...}) = 0
+mkdir("/var/cache/nginx/uwsgi_temp", 0700) = -1 EEXIST (File exists)
+stat("/var/cache/nginx/uwsgi_temp", {st_mode=S_IFDIR|S_ISGID|0700, st_size=6, ...}) = 0
+mkdir("/var/cache/nginx/scgi_temp", 0700) = -1 EEXIST (File exists)
+stat("/var/cache/nginx/scgi_temp", {st_mode=S_IFDIR|S_ISGID|0700, st_size=6, ...}) = 0
+open("/var/log/nginx/error.log", O_WRONLY|O_CREAT|O_APPEND, 0644) = 8
+fcntl(8, F_SETFD, FD_CLOEXEC)           = 0
+open("/var/log/nginx/access.log", O_WRONLY|O_CREAT|O_APPEND, 0644) = 9
+fcntl(9, F_SETFD, FD_CLOEXEC)           = 0
+dup2(8, 2)                              = 2
+prlimit64(0, RLIMIT_NOFILE, NULL, {rlim_cur=64*1024, rlim_max=64*1024}) = 0
+close(4)                                = 0
+close(5)                                = 0
+socketpair(AF_UNIX, SOCK_STREAM, 0, [4, 5]) = 0
+ioctl(4, FIONBIO, [1])                  = 0
+ioctl(5, FIONBIO, [1])                  = 0
+ioctl(4, FIOASYNC, [1])                 = 0
+fcntl(4, F_SETOWN, 1)                   = 0
+fcntl(4, F_SETFD, FD_CLOEXEC)           = 0
+fcntl(5, F_SETFD, FD_CLOEXEC)           = 0
+rt_sigprocmask(SIG_BLOCK, ~[], [HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO], 8) = 0
+fork(strace: Process 15 attached
+ <unfinished ...>
+[pid    15] gettid( <unfinished ...>
+[pid     1] <... fork resumed> )        = 15
+[pid    15] <... gettid resumed> )      = 15
+[pid     1] rt_sigprocmask(SIG_SETMASK, [HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO],  <unfinished ...>
+[pid    15] rt_sigprocmask(SIG_SETMASK, [HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO],  <unfinished ...>
+[pid     1] <... rt_sigprocmask resumed> NULL, 8) = 0
+[pid    15] <... rt_sigprocmask resumed> NULL, 8) = 0
+[pid    15] getpid( <unfinished ...>
+[pid     1] sendmsg(3, {msg_name=NULL, msg_namelen=0, msg_iov=[{iov_base="\1\0\0\0\0\0\0\0\17\0\0\0\0\0\0\0\1\0\0\0\0\0\0\0\4\0\0\0\0\0\0\0", iov_len=32}], msg_iovlen=1, msg_control=[{cmsg_len=20, cmsg_level=SOL_SOCKET, cmsg_type=SCM_RIGHTS, cmsg_data=[4]}], msg_controllen=24, msg_flags=0}, 0 <unfinished ...>
+[pid    15] <... getpid resumed> )      = 15
+[pid     1] <... sendmsg resumed> )     = 32
+[pid     1] nanosleep({0, 100000000},  <unfinished ...>
+[pid    15] geteuid()                   = 0
+[pid    15] rt_sigprocmask(SIG_BLOCK, ~[RTMIN RT_1 RT_2], [HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO], 8) = 0
+[pid    15] rt_sigprocmask(SIG_BLOCK, ~[], NULL, 8) = 0
+[pid    15] setgid(101)                 = 0
+[pid    15] futex(0x7f92002a7088, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+[pid    15] rt_sigprocmask(SIG_SETMASK, [HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO], NULL, 8) = 0
+[pid    15] socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0) = 10
+[pid    15] connect(10, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 24) = -1 ENOENT (No such file or directory)
+[pid    15] close(10)                   = 0
+[pid    15] open("/etc/group", O_RDONLY|O_CLOEXEC) = 10
+[pid    15] fcntl(10, F_SETFD, FD_CLOEXEC) = 0
+[pid    15] fcntl(10, F_SETFD, FD_CLOEXEC) = 0
+[pid    15] readv(10, [{iov_base="", iov_len=0}, {iov_base="root:x:0:root\nbin:x:1:root,bin,d"..., iov_len=1024}], 2) = 715
+[pid    15] readv(10, [{iov_base="", iov_len=0}, {iov_base="", iov_len=1024}], 2) = 0
+[pid    15] close(10)                   = 0
+[pid    15] setgroups(2, [101, 101])    = 0
+[pid    15] rt_sigprocmask(SIG_BLOCK, ~[RTMIN RT_1 RT_2], [HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO], 8) = 0
+[pid    15] rt_sigprocmask(SIG_BLOCK, ~[], NULL, 8) = 0
+[pid    15] setuid(100)                 = 0
+[pid    15] futex(0x7f92002a7088, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+[pid    15] rt_sigprocmask(SIG_SETMASK, [HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO], NULL, 8) = 0
+[pid    15] prctl(PR_SET_DUMPABLE, 1)   = 0
+[pid    15] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid    15] epoll_create1(0)            = 10
+[pid    15] eventfd2(0, 0)              = 11
+[pid    15] epoll_ctl(10, EPOLL_CTL_ADD, 11, {EPOLLIN|EPOLLET, {u32=6186816, u64=140265048139584}}) = 0
+[pid    15] eventfd2(0, 0)              = 12
+[pid    15] ioctl(12, FIONBIO, [1])     = 0
+[pid    15] io_setup(32, [0x7f92002a0000]) = 0
+[pid    15] epoll_ctl(10, EPOLL_CTL_ADD, 12, {EPOLLIN|EPOLLET, {u32=6186464, u64=140265048139232}}) = 0
+[pid    15] socketpair(AF_UNIX, SOCK_STREAM, 0, [13, 14]) = 0
+[pid    15] epoll_ctl(10, EPOLL_CTL_ADD, 13, {EPOLLIN|EPOLLRDHUP|EPOLLET, {u32=6186464, u64=140265048139232}}) = 0
+[pid    15] close(14)                   = 0
+[pid    15] epoll_pwait(10, [{EPOLLIN|EPOLLHUP|EPOLLRDHUP, {u32=6186464, u64=140265048139232}}], 1, 5000, NULL, 8) = 1
+[pid    15] close(13)                   = 0
+[pid    15] mmap(NULL, 249856, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f9200263000
+[pid    15] brk(0x7f9201d73000)         = 0x7f9201d73000
+[pid    15] epoll_ctl(10, EPOLL_CTL_ADD, 6, {EPOLLIN|EPOLLRDHUP, {u32=2502688, u64=140265044455456}}) = 0
+[pid    15] close(7)                    = 0
+[pid    15] close(4)                    = 0
+[pid    15] epoll_ctl(10, EPOLL_CTL_ADD, 5, {EPOLLIN|EPOLLRDHUP, {u32=2502928, u64=140265044455696}}) = 0
+[pid    15] epoll_pwait(10,  <unfinished ...>
+[pid     1] <... nanosleep resumed> 0x7ffd4a4af080) = 0
+[pid     1] sendmsg(3, {msg_name=NULL, msg_namelen=0, msg_iov=[{iov_base="\3\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\377\377\377\377\0\0\0\0", iov_len=32}], msg_iovlen=1, msg_controllen=0, msg_flags=0}, 0) = 32
+[pid     1] rt_sigsuspend([], 8)        = ? ERESTARTNOHAND (To be restarted if no handler)
+[pid     1] --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=7, si_uid=100, si_status=0, si_utime=0, si_stime=0} ---
+[pid     1] wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WNOHANG, NULL) = 7
+[pid     1] wait4(-1, 0x7ffd4a4ae974, WNOHANG, NULL) = 0
+[pid     1] rt_sigreturn({mask=[HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO]}) = -1 EINTR (Interrupted system call)
+[pid     1] close(3)                    = 0
+[pid     1] close(7)                    = 0
+[pid     1] sendmsg(4, {msg_name=NULL, msg_namelen=0, msg_iov=[{iov_base="\2\0\0\0\0\0\0\0\7\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\377\377\377\377\0\0\0\0", iov_len=32}], msg_iovlen=1, msg_controllen=0, msg_flags=0}, 0 <unfinished ...>
+[pid    15] <... epoll_pwait resumed> [{EPOLLIN, {u32=2502928, u64=140265044455696}}], 512, -1, NULL, 8) = 1
+[pid     1] <... sendmsg resumed> )     = 32
+[pid    15] recvmsg(5,  <unfinished ...>
+[pid     1] rt_sigsuspend([], 8 <unfinished ...>
+[pid    15] <... recvmsg resumed> {msg_name=NULL, msg_namelen=0, msg_iov=[{iov_base="\2\0\0\0\0\0\0\0\7\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\377\377\377\377\0\0\0\0", iov_len=32}], msg_iovlen=1, msg_controllen=0, msg_flags=0}, 0) = 32
+[pid     1] <... rt_sigsuspend resumed> ) = ? ERESTARTNOHAND (To be restarted if no handler)
+[pid    15] close(3 <unfinished ...>
+[pid     1] --- SIGIO {si_signo=SIGIO, si_code=SI_KERNEL} ---
+[pid    15] <... close resumed> )       = 0
+[pid     1] rt_sigreturn({mask=[HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO]} <unfinished ...>
+[pid    15] recvmsg(5,  <unfinished ...>
+[pid     1] <... rt_sigreturn resumed> ) = -1 EINTR (Interrupted system call)
+[pid    15] <... recvmsg resumed> {msg_namelen=0}, 0) = -1 EAGAIN (Resource temporarily unavailable)
+[pid     1] rt_sigsuspend([], 8 <unfinished ...>
+[pid    15] epoll_pwait(10, 
+
+^[[1;5F^Cstrace: Process 1 detached
+strace: Process 15 detached
+ <detached ...>
+[usere@lx-12-5 seccomp]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                   NAMES
+f6bbdf279b98        nginx:alpine        "nginx -g 'daemon of…"   25 minutes ago      Up 25 minutes       0.0.0.0:32768->80/tcp   web
+[usere@lx-12-5 seccomp]$ docker rm --force web
+web
+[usere@lx-12-5 seccomp]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+[usere@lx-12-5 seccomp]$ 
+

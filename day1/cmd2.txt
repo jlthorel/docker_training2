@@ -1,0 +1,19 @@
+[usere@lx-12-5 ~]$ docker kill -s HUP  web 
+Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Post http://%2Fvar%2Frun%2Fdocker.sock/v1.35/containers/web/kill?signal=HUP: dial unix /var/run/docker.sock: connect: permission denied
+[usere@lx-12-5 ~]$ su - usere
+Mot de passe : 
+Dernière connexion : lundi 15 janvier 2018 à 14:44:28 CET sur pts/4
+[usere@lx-12-5 ~]$ docker kill -s HUP  web 
+web
+[usere@lx-12-5 ~]$ docker exec  -it web sh 
+/ # ps aux
+PID   USER     TIME   COMMAND
+    1 root       0:00 nginx: master process nginx -g daemon off;
+    8 root       0:00 strace -f -p 1
+   15 nginx      0:00 nginx: worker process
+   16 root       0:00 sh
+   22 root       0:00 ps aux
+/ # 
+
+
+

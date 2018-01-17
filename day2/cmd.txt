@@ -1,0 +1,2630 @@
+[usere@lx-12-5 ~]$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+[usere@lx-12-5 ~]$ ls
+Bureau  Documents  Images  Modèles  Musique  Public  Téléchargements  Vidéos
+[usere@lx-12-5 ~]$ cd Documents/training_docker/
+[usere@lx-12-5 training_docker]$ mkdir day2
+[usere@lx-12-5 training_docker]$ cd day2
+[usere@lx-12-5 day2]$ mkdir tp1
+[usere@lx-12-5 day2]$ cd tp1
+[usere@lx-12-5 tp1]$ git clone https://github.com/revollat/hello-world
+Cloning into 'hello-world'...
+remote: Counting objects: 30, done.
+remote: Total 30 (delta 0), reused 0 (delta 0), pack-reused 30
+Unpacking objects: 100% (30/30), done.
+[usere@lx-12-5 tp1]$ su - 
+Mot de passe : 
+Dernière connexion : mardi 16 janvier 2018 à 08:54:31 CET sur pts/0
+[root@lx-12-5 ~]# yum install nasm
+Modules complémentaires chargés : fastestmirror, langpacks
+adobe-linux-x86_64                                       | 2.9 kB     00:00     
+base                                                     | 3.6 kB     00:00     
+docker-ce-stable                                         | 2.9 kB     00:00     
+epel/x86_64/metalink                                     |  27 kB     00:00     
+extras                                                   | 3.4 kB     00:00     
+updates                                                  | 3.4 kB     00:00     
+virtualbox                                               | 1.1 kB     00:00     
+Loading mirror speeds from cached hostfile
+ * base: centos.quelquesmots.fr
+ * epel: epel.mirror.nucleus.be
+ * extras: ftp.ciril.fr
+ * updates: mirrors.standaloneinstaller.com
+Résolution des dépendances
+--> Lancement de la transaction de test
+---> Le paquet nasm.x86_64 0:2.10.07-7.el7 sera installé
+--> Résolution des dépendances terminée
+
+Dépendances résolues
+
+================================================================================
+ Package        Architecture     Version                   Dépôt          Taille
+================================================================================
+Installation :
+ nasm           x86_64           2.10.07-7.el7             base           402 k
+
+Résumé de la transaction
+================================================================================
+Installation   1 Paquet
+
+Taille totale des téléchargements : 402 k
+Taille d'installation : 1.4 M
+Is this ok [y/d/N]: y
+Downloading packages:
+nasm-2.10.07-7.el7.x86_64.rpm                              | 402 kB   00:00     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installation : nasm-2.10.07-7.el7.x86_64                                  1/1 
+  Vérification : nasm-2.10.07-7.el7.x86_64                                  1/1 
+
+Installé :
+  nasm.x86_64 0:2.10.07-7.el7                                                   
+
+Terminé !
+[root@lx-12-5 ~]# exit
+déconnexion
+[usere@lx-12-5 tp1]$ ls
+hello-world
+[usere@lx-12-5 tp1]$ cd hello-world/
+[usere@lx-12-5 hello-world]$ ls
+Dockerfile  hello.asm  Makefile
+[usere@lx-12-5 hello-world]$ make
+nasm -o hello hello.asm
+chmod +x hello
+[usere@lx-12-5 hello-world]$ ./hello
+
+Hello Epitech Nice et Docker Meetup :)
+
+[usere@lx-12-5 hello-world]$ ls
+Dockerfile  hello  hello.asm  Makefile
+[usere@lx-12-5 hello-world]$ cat hello.asm 
+; this is especially thanks to:
+; http://blog.markloiseau.com/2012/05/tiny-64-bit-elf-executables/
+
+BITS 64
+	org	0x00400000	; Program load offset
+
+; 64-bit ELF header
+ehdr:
+	;  1), 0 (ABI ver.)
+	db 0x7F, "ELF", 2, 1, 1, 0       ; e_ident
+	times 8 db 0                     ; reserved (zeroes)
+
+	dw 2              ; e_type:	Executable file
+	dw 0x3e           ; e_machine:	AMD64
+	dd 1              ; e_version:	current version
+	dq _start         ; e_entry:	program entry address (0x78)
+	dq phdr - $$      ; e_phoff	program header offset (0x40)
+	dq 0              ; e_shoff	no section headers
+	dd 0              ; e_flags	no flags
+	dw ehdrsize       ; e_ehsize:	ELF header size (0x40)
+	dw phdrsize       ; e_phentsize:	program header size (0x38)
+	dw 1              ; e_phnum:	one program header
+	dw 0              ; e_shentsize
+	dw 0              ; e_shnum
+	dw 0              ; e_shstrndx
+
+ehdrsize equ $ - ehdr
+
+; 64-bit ELF program header
+phdr:
+	dd 1              ; p_type:	loadable segment
+	dd 5              ; p_flags	read and execute
+	dq 0              ; p_offset
+	dq $$             ; p_vaddr:	start of the current section
+	dq $$             ; p_paddr:	"		"
+	dq filesize       ; p_filesz
+	dq filesize       ; p_memsz
+	dq 0x200000       ; p_align:	2^11=200000 = section alignment
+
+; program header size
+phdrsize equ $ - phdr
+
+; Hello World!/your program here
+_start:
+
+	; sys_write(stdout, message, length)
+	mov	rax, 1           ; sys_write
+	mov	rdi, 1           ; stdout
+	mov	rsi, message     ; message address
+	mov	rdx, length      ; message string length
+	syscall
+
+	; sys_exit(return_code)
+	mov	rax, 60          ; sys_exit
+	mov	rdi, 0           ; return 0 (success)
+	syscall
+
+	message:
+		db 0x0A
+		db 'Hello Epitech Nice et Docker Meetup :)', 0x0A
+		db 0x0A
+	length: equ	$-message            ; message length calculation
+
+; File size calculation
+filesize equ $ - $$
+[usere@lx-12-5 hello-world]$ tar cv --files-from /dev/null | docker import - vide
+sha256:d3255d1d1d4738821968571f94482490e8d200b77e6c8a3fa48340ba71eb6027
+[usere@lx-12-5 hello-world]$ ls
+Dockerfile  hello  hello.asm  Makefile
+[usere@lx-12-5 hello-world]$ docker image ls
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+vide                latest              d3255d1d1d47        23 seconds ago      0B
+jthorel/stress      latest              4b47e03f7836        19 hours ago        150MB
+jthorel/layers3     latest              6f152b535efb        21 hours ago        4.14MB
+jthorel/lauers      latest              df96fb923935        21 hours ago        4.14MB
+jthorel/layers2     latest              df96fb923935        21 hours ago        4.14MB
+jthorel/layers1     latest              d6be31548de4        21 hours ago        4.14MB
+jthorel/lauers1     latest              d6be31548de4        21 hours ago        4.14MB
+nginx               alpine              bb00c21b4edf        6 days ago          16.8MB
+alpine              latest              3fd9065eaf02        6 days ago          4.14MB
+ubuntu              latest              00fd29ccc6f1        4 weeks ago         111MB
+sjourdan/strace     latest              058defe9f66a        10 months ago       5.96MB
+[usere@lx-12-5 hello-world]$ docker image ?
+
+Usage:	docker image COMMAND
+
+Manage images
+
+Options:
+
+
+Commands:
+  build       Build an image from a Dockerfile
+  history     Show the history of an image
+  import      Import the contents from a tarball to create a filesystem image
+  inspect     Display detailed information on one or more images
+  load        Load an image from a tar archive or STDIN
+  ls          List images
+  prune       Remove unused images
+  pull        Pull an image or a repository from a registry
+  push        Push an image or a repository to a registry
+  rm          Remove one or more images
+  save        Save one or more images to a tar archive (streamed to STDOUT by default)
+  tag         Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+
+Run 'docker image COMMAND --help' for more information on a command.
+[usere@lx-12-5 hello-world]$ docker image inspect vide
+[
+    {
+        "Id": "sha256:d3255d1d1d4738821968571f94482490e8d200b77e6c8a3fa48340ba71eb6027",
+        "RepoTags": [
+            "vide:latest"
+        ],
+        "RepoDigests": [],
+        "Parent": "",
+        "Comment": "Imported from -",
+        "Created": "2018-01-16T08:23:27.399580974Z",
+        "Container": "",
+        "ContainerConfig": {
+            "Hostname": "",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": null,
+            "Cmd": null,
+            "Image": "",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "OnBuild": null,
+            "Labels": null
+        },
+        "DockerVersion": "17.12.0-ce",
+        "Author": "",
+        "Config": {
+            "Hostname": "",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": null,
+            "Cmd": null,
+            "Image": "",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "OnBuild": null,
+            "Labels": null
+        },
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 0,
+        "VirtualSize": 0,
+        "GraphDriver": {
+            "Data": {
+                "DeviceId": "59",
+                "DeviceName": "docker-8:3-134475063-84fc824df0dc3fa9026f69c4dda390b46c5891984576d0c1274625fb952de7ef",
+                "DeviceSize": "10737418240"
+            },
+            "Name": "devicemapper"
+        },
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "2018-01-16T09:23:27.405388425+01:00"
+        }
+    }
+]
+[usere@lx-12-5 hello-world]$ docker image build -t jthorel/hello .
+Sending build context to Docker daemon  99.84kB
+Step 1/3 : FROM vide
+ ---> d3255d1d1d47
+Step 2/3 : COPY hello /
+ ---> 56fcbc338ee0
+Step 3/3 : CMD ["/hello"]
+ ---> Running in 7aa76b7a751c
+Removing intermediate container 7aa76b7a751c
+ ---> 1af7800085e0
+Successfully built 1af7800085e0
+Successfully tagged jthorel/hello:latest
+[usere@lx-12-5 hello-world]$ ls
+Dockerfile  hello  hello.asm  Makefile
+[usere@lx-12-5 hello-world]$ cat Dockerfile 
+FROM vide
+COPY hello /
+CMD ["/hello"]
+[usere@lx-12-5 hello-world]$ docker run jthorel/hello
+
+Hello Epitech Nice et Docker Meetup :)
+
+[usere@lx-12-5 hello-world]$ which docker
+/usr/bin/docker
+[usere@lx-12-5 hello-world]$ ls /var
+account  adm  cache  crash  db  empty  games  gdm  gopher  kerberos  lib  local  lock  log  mail  nis  opt  preserve  run  spool  tmp  var  www  yp
+[usere@lx-12-5 hello-world]$ ls /var/local/
+[usere@lx-12-5 hello-world]$ ls /var/lib
+AccountsService  chrony  dbus      fprint    hyperv        lldpad                    mlocate         os-prober   postfix  rpm-state       stateless  upower
+alsa             color   dhclient  games     inital-setup  logrotate                 net-snmp        PackageKit  pulse    rsyslog         systemd    xkb
+alternatives     colord  dkms      gdm       initramfs     logrotate.status.rpmsave  NetworkManager  php         rhsm     samba           tpm        yum
+authconfig       cs      dnsmasq   geoclue   iscsi         machines                  nfs             plymouth    rpcbind  selinux         udisks2
+bluetooth        dav     docker    gssproxy  libvirt       misc                      ntp             polkit-1    rpm      setroubleshoot  unbound
+[usere@lx-12-5 hello-world]$ ls /var/lib/docker/
+ls: impossible d'ouvrir le répertoire /var/lib/docker/: Permission non accordée
+[usere@lx-12-5 hello-world]$ ls -al  /var/lib
+total 40
+drwxr-xr-x. 59 root           root           4096 16 janv. 08:40 .
+drwxr-xr-x. 23 root           root           4096 16 janv. 08:40 ..
+drwxr-xr-x.  4 root           root             30 25 mai    2017 AccountsService
+drwxr-xr-x.  2 root           root             49 16 janv. 08:57 alsa
+drwxr-xr-x.  2 root           root           4096  7 août  13:53 alternatives
+drwx------.  3 root           root             17  7 nov.   2016 authconfig
+drwxr-xr-x.  7 root           root           4096  7 août  13:46 bluetooth
+drwxr-xr-x.  2 chrony         chrony           18 15 janv. 17:04 chrony
+drwxr-xr-x.  3 root           root             16 24 déc.   2014 color
+drwxr-xr-x.  3 colord         colord           50  4 févr.  2016 colord
+drwxr-xr-x.  2 root           root              6  5 nov.   2016 cs
+drwx------   2 apache         apache            6 12 avril  2017 dav
+drwxr-xr-x.  2 root           root              6  6 nov.   2016 dbus
+drwxr-xr-x.  2 root           root             69 16 janv. 08:40 dhclient
+drwxr-xr-x   2 root           root             27  7 août  13:52 dkms
+drwxr-xr-x.  2 root           root              6 11 nov.   2016 dnsmasq
+drwx--x--x  14 root           root           4096 16 janv. 08:40 docker
+drwxr-xr-x.  2 root           root              6 24 juin   2014 fprint
+drwxr-xr-x.  2 root           root              6  5 nov.   2016 games
+drwxrwx--T.  6 gdm            gdm              79 16 janv. 08:40 gdm
+drwxr-xr-x   2 geoclue        geoclue           6  5 nov.   2016 geoclue
+drwxr-xr-x   4 root           root             52 16 janv. 08:40 gssproxy
+drwxr-xr-x.  2 root           root              6  6 nov.   2016 hyperv
+drwxr-xr-x.  2 root           root             27 24 déc.   2014 inital-setup
+drwxr-xr-x.  2 root           root              6 29 juin   2017 initramfs
+drwxr-xr-x.  8 root           root             84  6 nov.   2016 iscsi
+drwxr-xr-x.  3 root           root             17 24 déc.   2014 libvirt
+drwxr-xr-x.  2 root           root              6  5 nov.   2016 lldpad
+drwxr-xr-x   2 root           root             29 16 janv. 09:26 logrotate
+-rw-r--r--   1 root           root            602  4 févr.  2016 logrotate.status.rpmsave
+drwx------   2 root           root              6  4 févr.  2016 machines
+drwxr-xr-x.  2 root           root              6  5 nov.   2016 misc
+drwxr-x---.  2 root           slocate          23 16 janv. 09:26 mlocate
+drwxr-xr-x.  4 root           root             43 12 avril  2017 net-snmp
+drwx------.  2 root           root           4096 15 janv. 17:04 NetworkManager
+drwxr-xr-x.  6 root           root           4096 16 janv. 08:40 nfs
+drwxr-xr-x   2 ntp            ntp               6 12 avril  2017 ntp
+drwxr-xr-x.  2 root           root             19  6 nov.   2016 os-prober
+drwxr-xr-x.  2 root           root             81 15 nov.   2016 PackageKit
+drwxr-xr-x   3 root           root             20  6 nov.   2016 php
+drwxr-xr-x.  2 root           root             26 14 nov.   2016 plymouth
+drwxr-x---.  3 root           polkitd          27 24 déc.   2014 polkit-1
+drwx------.  2 postfix        root             24 24 déc.   2014 postfix
+drwx------.  2 pulse          pulse             6 12 avril  2017 pulse
+drwxr-xr-x.  2 root           root             25 24 déc.   2014 rhsm
+drwx------.  2 rpc            rpc               6 13 juin   2017 rpcbind
+drwxr-xr-x.  2 root           root           4096 16 janv. 09:15 rpm
+drwxr-xr-x.  3 root           root             18  7 avril  2017 rpm-state
+drwx------.  2 root           root             28 16 janv. 09:30 rsyslog
+drwxr-xr-x.  3 root           root             20 25 mai    2017 samba
+drwxr-xr-x.  2 root           root              6 17 janv.  2017 selinux
+drwx------.  2 setroubleshoot setroubleshoot   69  5 nov.   2016 setroubleshoot
+drwxr-xr-x.  4 root           root             33 12 avril  2017 stateless
+drwxr-xr-x.  7 root           root             95 25 mai    2017 systemd
+drwx------   2 tss            tss               6 20 nov.   2015 tpm
+drwx------.  2 root           root              6 20 nov.   2015 udisks2
+drwxr-xr-x.  2 unbound        unbound          21  7 avril  2017 unbound
+drwxr-xr-x.  2 root           root           4096  7 avril  2017 upower
+drwxr-xr-x.  2 root           root             28 16 janv. 08:52 xkb
+drwxr-xr-x.  6 root           root             75 16 janv. 09:15 yum
+[usere@lx-12-5 hello-world]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+[usere@lx-12-5 hello-world]$ docker container ls -a
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                     PORTS               NAMES
+74d432de7d2d        jthorel/hello       "/hello"            9 minutes ago       Exited (0) 9 minutes ago                       quirky_chatterjee
+aedb7c3c63c4        sjourdan/strace     "strace -f -p 1"    17 hours ago        Exited (0) 17 hours ago                        amazing_lovelace
+bb1e037c1750        alpine              "sh"                17 hours ago        Exited (1) 17 hours ago                        hungry_jones
+99b9d1e657dc        alpine              "sh"                18 hours ago        Created                                        hungry_feynman
+ca9ec64f7e4f        alpine              "chown nobody /"    18 hours ago        Exited (1) 18 hours ago                        zealous_albattani
+9c54ec8245e8        alpine              "chown nobody /"    18 hours ago        Exited (1) 18 hours ago                        practical_dubinsky
+af21823c63fa        alpine              "chown nobody /"    18 hours ago        Exited (1) 18 hours ago                        inspiring_swirles
+e0d3cfdcb0b5        alpine              "chown nobody /"    18 hours ago        Exited (0) 18 hours ago                        relaxed_pare
+cb2ae2235a3f        alpine              "chown nobody /"    18 hours ago        Exited (0) 18 hours ago                        gifted_meitner
+a2d2d902547a        ubuntu              "/bin/bash"         18 hours ago        Exited (0) 18 hours ago                        hungry_joliot
+f917c96a95ad        ubuntu              "/bin/bash"         19 hours ago        Exited (0) 19 hours ago                        adoring_saha
+[usere@lx-12-5 hello-world]$ docker  container ls -a  --format "{{.ID}}\t{{.Command}}
+> "
+74d432de7d2d	"/hello"
+
+aedb7c3c63c4	"strace -f -p 1"
+
+bb1e037c1750	"sh"
+
+99b9d1e657dc	"sh"
+
+ca9ec64f7e4f	"chown nobody /"
+
+9c54ec8245e8	"chown nobody /"
+
+af21823c63fa	"chown nobody /"
+
+e0d3cfdcb0b5	"chown nobody /"
+
+cb2ae2235a3f	"chown nobody /"
+
+a2d2d902547a	"/bin/bash"
+
+f917c96a95ad	"/bin/bash"
+
+[usere@lx-12-5 hello-world]$ docker run -it alpine /bin/sh
+/ # ls
+bin    dev    etc    home   lib    media  mnt    proc   root   run    sbin   srv    sys    tmp    usr    var
+/ # [usere@lx-12-5 hello-world]$ docker  container ls   --format "{{.ID}}\t{{.Command}}
+"
+"docker container ls" accepts no arguments.
+See 'docker container ls --help'.
+
+Usage:  docker container ls [OPTIONS] [flags]
+
+List containers
+[usere@lx-12-5 hello-world]$ docker  container ls -a  format "{{.ID}}\t{{.Command}}"
+"docker container ls" accepts no arguments.
+See 'docker container ls --help'.
+
+Usage:  docker container ls [OPTIONS] [flags]
+
+List containers
+[usere@lx-12-5 hello-world]$ docker  container ls   --format "{{.ID}}\t{{.Command}}
+"
+344612e27f50	"/bin/sh"
+
+[usere@lx-12-5 hello-world]$ docker  attach 344612e27f50
+/ # exit
+[usere@lx-12-5 hello-world]$ docker  container ls 
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+[usere@lx-12-5 hello-world]$ docker  start 344612e27f50
+344612e27f50
+[usere@lx-12-5 hello-world]$ docker  attach 344612e27f50
+/ # exit
+[usere@lx-12-5 hello-world]$ docker  start 344612e27f50
+344612e27f50
+[usere@lx-12-5 hello-world]$ docker  container ls 
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+344612e27f50        alpine              "/bin/sh"           3 minutes ago       Up 4 seconds                            romantic_archimedes
+[usere@lx-12-5 hello-world]$ docker  container ls --l
+unknown flag: --l
+See 'docker container ls --help'.
+[usere@lx-12-5 hello-world]$ docker  container ls -l
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+344612e27f50        alpine              "/bin/sh"           4 minutes ago       Up 58 seconds                           romantic_archimedes
+[usere@lx-12-5 hello-world]$ docker run -d -P --name web nginx:alpine
+19bf0a13ef81de3b4467e481484de7e6b622779fb773866c745d7edb81e05a7b
+[usere@lx-12-5 hello-world]$ docker  container ls -l
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                   NAMES
+19bf0a13ef81        nginx:alpine        "nginx -g 'daemon of…"   34 seconds ago      Up 33 seconds       0.0.0.0:32768->80/tcp   web
+[usere@lx-12-5 hello-world]$ docker  container ls 
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                   NAMES
+19bf0a13ef81        nginx:alpine        "nginx -g 'daemon of…"   39 seconds ago      Up 38 seconds       0.0.0.0:32768->80/tcp   web
+344612e27f50        alpine              "/bin/sh"                6 minutes ago       Up 2 minutes                                romantic_archimedes
+[usere@lx-12-5 hello-world]$ docker  container ls -lq
+19bf0a13ef81
+[usere@lx-12-5 hello-world]$ docker  container stop 344612e27f50
+344612e27f50
+[usere@lx-12-5 hello-world]$ docker  container ls -l
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                   NAMES
+19bf0a13ef81        nginx:alpine        "nginx -g 'daemon of…"   2 minutes ago       Up 2 minutes        0.0.0.0:32768->80/tcp   web
+[usere@lx-12-5 hello-world]$ docker run jpetazo/clock
+Unable to find image 'jpetazo/clock:latest' locally
+docker: Error response from daemon: pull access denied for jpetazo/clock, repository does not exist or may require 'docker login'.
+See 'docker run --help'.
+[usere@lx-12-5 hello-world]$ docker run jpetazzo/clock
+Unable to find image 'jpetazzo/clock:latest' locally
+latest: Pulling from jpetazzo/clock
+a3ed95caeb02: Pull complete 
+1db09adb5ddd: Pull complete 
+Digest: sha256:446edaa1594798d89ee2a93f660161b265db91b026491e4671c14371eff5eea0
+Status: Downloaded newer image for jpetazzo/clock:latest
+Tue Jan 16 08:55:22 UTC 2018
+Tue Jan 16 08:55:23 UTC 2018
+Tue Jan 16 08:55:24 UTC 2018
+Tue Jan 16 08:55:25 UTC 2018
+Tue Jan 16 08:55:26 UTC 2018
+Tue Jan 16 08:55:27 UTC 2018
+Tue Jan 16 08:55:28 UTC 2018
+Tue Jan 16 08:55:29 UTC 2018
+Tue Jan 16 08:55:30 UTC 2018
+Tue Jan 16 08:55:31 UTC 2018
+Tue Jan 16 08:55:32 UTC 2018
+Tue Jan 16 08:55:33 UTC 2018
+Tue Jan 16 08:55:34 UTC 2018
+Tue Jan 16 08:55:35 UTC 2018
+Tue Jan 16 08:55:36 UTC 2018
+Tue Jan 16 08:55:37 UTC 2018
+Tue Jan 16 08:55:38 UTC 2018
+Tue Jan 16 08:55:39 UTC 2018
+Tue Jan 16 08:55:40 UTC 2018
+Tue Jan 16 08:55:41 UTC 2018
+Tue Jan 16 08:55:42 UTC 2018
+Tue Jan 16 08:55:43 UTC 2018
+Tue Jan 16 08:55:44 UTC 2018
+Tue Jan 16 08:55:45 UTC 2018
+Tue Jan 16 08:55:46 UTC 2018
+Tue Jan 16 08:55:47 UTC 2018
+Tue Jan 16 08:55:48 UTC 2018
+Tue Jan 16 08:55:49 UTC 2018
+Tue Jan 16 08:55:50 UTC 2018
+Tue Jan 16 08:55:51 UTC 2018
+^C[usere@lx-12-5 hello-world]$ docker run -d  jpetazzo/clock
+505386514dd153f17a3088cee0f317dbe5ef66e5b322c82c2b19b2818b355946
+[usere@lx-12-5 hello-world]$ docker container top 
+"docker container top" requires at least 1 argument.
+See 'docker container top --help'.
+
+Usage:  docker container top CONTAINER [ps OPTIONS]
+
+Display the running processes of a container
+[usere@lx-12-5 hello-world]$ docker container top web
+UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD
+root                7540                7525                0                   09:51               ?                   00:00:00            nginx: master process nginx -g daemon off;
+100                 7587                7540                0                   09:51               ?                   00:00:00            nginx: worker process
+[usere@lx-12-5 hello-world]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                   NAMES
+505386514dd1        jpetazzo/clock      "/bin/sh -c 'while d…"   6 minutes ago       Up 6 minutes                                stupefied_bardeen
+19bf0a13ef81        nginx:alpine        "nginx -g 'daemon of…"   10 minutes ago      Up 10 minutes       0.0.0.0:32768->80/tcp   web
+[usere@lx-12-5 hello-world]$ docker container logs -f 505386514dd1
+Tue Jan 16 08:56:33 UTC 2018
+Tue Jan 16 08:56:34 UTC 2018
+Tue Jan 16 08:56:35 UTC 2018
+Tue Jan 16 08:56:36 UTC 2018
+Tue Jan 16 08:56:37 UTC 2018
+Tue Jan 16 08:56:38 UTC 2018
+Tue Jan 16 08:56:39 UTC 2018
+Tue Jan 16 08:56:40 UTC 2018
+Tue Jan 16 08:56:41 UTC 2018
+Tue Jan 16 08:56:42 UTC 2018
+Tue Jan 16 08:56:43 UTC 2018
+Tue Jan 16 08:56:44 UTC 2018
+Tue Jan 16 08:56:45 UTC 2018
+Tue Jan 16 08:56:46 UTC 2018
+Tue Jan 16 08:56:47 UTC 2018
+Tue Jan 16 08:56:48 UTC 2018
+Tue Jan 16 08:56:49 UTC 2018
+Tue Jan 16 08:56:50 UTC 2018
+Tue Jan 16 08:56:51 UTC 2018
+Tue Jan 16 08:56:52 UTC 2018
+Tue Jan 16 08:56:53 UTC 2018
+Tue Jan 16 08:56:54 UTC 2018
+Tue Jan 16 08:56:55 UTC 2018
+Tue Jan 16 08:56:56 UTC 2018
+Tue Jan 16 08:56:57 UTC 2018
+Tue Jan 16 08:56:58 UTC 2018
+Tue Jan 16 08:56:59 UTC 2018
+Tue Jan 16 08:57:00 UTC 2018
+Tue Jan 16 08:57:01 UTC 2018
+Tue Jan 16 08:57:02 UTC 2018
+Tue Jan 16 08:57:03 UTC 2018
+Tue Jan 16 08:57:04 UTC 2018
+Tue Jan 16 08:57:05 UTC 2018
+Tue Jan 16 08:57:06 UTC 2018
+Tue Jan 16 08:57:07 UTC 2018
+Tue Jan 16 08:57:08 UTC 2018
+Tue Jan 16 08:57:09 UTC 2018
+Tue Jan 16 08:57:10 UTC 2018
+Tue Jan 16 08:57:11 UTC 2018
+Tue Jan 16 08:57:12 UTC 2018
+Tue Jan 16 08:57:13 UTC 2018
+Tue Jan 16 08:57:14 UTC 2018
+Tue Jan 16 08:57:15 UTC 2018
+Tue Jan 16 08:57:16 UTC 2018
+Tue Jan 16 08:57:17 UTC 2018
+Tue Jan 16 08:57:18 UTC 2018
+Tue Jan 16 08:57:19 UTC 2018
+Tue Jan 16 08:57:20 UTC 2018
+Tue Jan 16 08:57:21 UTC 2018
+Tue Jan 16 08:57:22 UTC 2018
+Tue Jan 16 08:57:23 UTC 2018
+Tue Jan 16 08:57:24 UTC 2018
+Tue Jan 16 08:57:25 UTC 2018
+Tue Jan 16 08:57:26 UTC 2018
+Tue Jan 16 08:57:27 UTC 2018
+Tue Jan 16 08:57:28 UTC 2018
+Tue Jan 16 08:57:29 UTC 2018
+Tue Jan 16 08:57:30 UTC 2018
+Tue Jan 16 08:57:31 UTC 2018
+Tue Jan 16 08:57:32 UTC 2018
+Tue Jan 16 08:57:33 UTC 2018
+Tue Jan 16 08:57:34 UTC 2018
+Tue Jan 16 08:57:35 UTC 2018
+Tue Jan 16 08:57:36 UTC 2018
+Tue Jan 16 08:57:37 UTC 2018
+Tue Jan 16 08:57:38 UTC 2018
+Tue Jan 16 08:57:39 UTC 2018
+Tue Jan 16 08:57:40 UTC 2018
+Tue Jan 16 08:57:41 UTC 2018
+Tue Jan 16 08:57:42 UTC 2018
+Tue Jan 16 08:57:43 UTC 2018
+Tue Jan 16 08:57:44 UTC 2018
+Tue Jan 16 08:57:45 UTC 2018
+Tue Jan 16 08:57:46 UTC 2018
+Tue Jan 16 08:57:47 UTC 2018
+Tue Jan 16 08:57:48 UTC 2018
+Tue Jan 16 08:57:49 UTC 2018
+Tue Jan 16 08:57:50 UTC 2018
+Tue Jan 16 08:57:51 UTC 2018
+Tue Jan 16 08:57:52 UTC 2018
+Tue Jan 16 08:57:53 UTC 2018
+Tue Jan 16 08:57:54 UTC 2018
+Tue Jan 16 08:57:55 UTC 2018
+Tue Jan 16 08:57:56 UTC 2018
+Tue Jan 16 08:57:57 UTC 2018
+Tue Jan 16 08:57:58 UTC 2018
+Tue Jan 16 08:57:59 UTC 2018
+Tue Jan 16 08:58:00 UTC 2018
+Tue Jan 16 08:58:01 UTC 2018
+Tue Jan 16 08:58:02 UTC 2018
+Tue Jan 16 08:58:03 UTC 2018
+Tue Jan 16 08:58:04 UTC 2018
+Tue Jan 16 08:58:05 UTC 2018
+Tue Jan 16 08:58:06 UTC 2018
+Tue Jan 16 08:58:07 UTC 2018
+Tue Jan 16 08:58:08 UTC 2018
+Tue Jan 16 08:58:09 UTC 2018
+Tue Jan 16 08:58:10 UTC 2018
+Tue Jan 16 08:58:11 UTC 2018
+Tue Jan 16 08:58:12 UTC 2018
+Tue Jan 16 08:58:13 UTC 2018
+Tue Jan 16 08:58:14 UTC 2018
+Tue Jan 16 08:58:15 UTC 2018
+Tue Jan 16 08:58:16 UTC 2018
+Tue Jan 16 08:58:17 UTC 2018
+Tue Jan 16 08:58:18 UTC 2018
+Tue Jan 16 08:58:19 UTC 2018
+Tue Jan 16 08:58:20 UTC 2018
+Tue Jan 16 08:58:21 UTC 2018
+Tue Jan 16 08:58:22 UTC 2018
+Tue Jan 16 08:58:23 UTC 2018
+Tue Jan 16 08:58:24 UTC 2018
+Tue Jan 16 08:58:25 UTC 2018
+Tue Jan 16 08:58:26 UTC 2018
+Tue Jan 16 08:58:27 UTC 2018
+Tue Jan 16 08:58:28 UTC 2018
+Tue Jan 16 08:58:29 UTC 2018
+Tue Jan 16 08:58:30 UTC 2018
+Tue Jan 16 08:58:31 UTC 2018
+Tue Jan 16 08:58:32 UTC 2018
+Tue Jan 16 08:58:33 UTC 2018
+Tue Jan 16 08:58:34 UTC 2018
+Tue Jan 16 08:58:35 UTC 2018
+Tue Jan 16 08:58:36 UTC 2018
+Tue Jan 16 08:58:37 UTC 2018
+Tue Jan 16 08:58:38 UTC 2018
+Tue Jan 16 08:58:39 UTC 2018
+Tue Jan 16 08:58:40 UTC 2018
+Tue Jan 16 08:58:41 UTC 2018
+Tue Jan 16 08:58:42 UTC 2018
+Tue Jan 16 08:58:43 UTC 2018
+Tue Jan 16 08:58:44 UTC 2018
+Tue Jan 16 08:58:45 UTC 2018
+Tue Jan 16 08:58:46 UTC 2018
+Tue Jan 16 08:58:47 UTC 2018
+Tue Jan 16 08:58:48 UTC 2018
+Tue Jan 16 08:58:49 UTC 2018
+Tue Jan 16 08:58:50 UTC 2018
+Tue Jan 16 08:58:51 UTC 2018
+Tue Jan 16 08:58:52 UTC 2018
+Tue Jan 16 08:58:53 UTC 2018
+Tue Jan 16 08:58:54 UTC 2018
+Tue Jan 16 08:58:55 UTC 2018
+Tue Jan 16 08:58:56 UTC 2018
+Tue Jan 16 08:58:57 UTC 2018
+Tue Jan 16 08:58:58 UTC 2018
+Tue Jan 16 08:58:59 UTC 2018
+Tue Jan 16 08:59:00 UTC 2018
+Tue Jan 16 08:59:01 UTC 2018
+Tue Jan 16 08:59:02 UTC 2018
+Tue Jan 16 08:59:03 UTC 2018
+Tue Jan 16 08:59:04 UTC 2018
+Tue Jan 16 08:59:05 UTC 2018
+Tue Jan 16 08:59:06 UTC 2018
+Tue Jan 16 08:59:07 UTC 2018
+Tue Jan 16 08:59:08 UTC 2018
+Tue Jan 16 08:59:09 UTC 2018
+Tue Jan 16 08:59:10 UTC 2018
+Tue Jan 16 08:59:11 UTC 2018
+Tue Jan 16 08:59:12 UTC 2018
+Tue Jan 16 08:59:13 UTC 2018
+Tue Jan 16 08:59:14 UTC 2018
+Tue Jan 16 08:59:15 UTC 2018
+Tue Jan 16 08:59:16 UTC 2018
+Tue Jan 16 08:59:17 UTC 2018
+Tue Jan 16 08:59:18 UTC 2018
+Tue Jan 16 08:59:19 UTC 2018
+Tue Jan 16 08:59:20 UTC 2018
+Tue Jan 16 08:59:21 UTC 2018
+Tue Jan 16 08:59:22 UTC 2018
+Tue Jan 16 08:59:23 UTC 2018
+Tue Jan 16 08:59:24 UTC 2018
+Tue Jan 16 08:59:25 UTC 2018
+Tue Jan 16 08:59:26 UTC 2018
+Tue Jan 16 08:59:27 UTC 2018
+Tue Jan 16 08:59:28 UTC 2018
+Tue Jan 16 08:59:29 UTC 2018
+Tue Jan 16 08:59:30 UTC 2018
+Tue Jan 16 08:59:31 UTC 2018
+Tue Jan 16 08:59:32 UTC 2018
+Tue Jan 16 08:59:33 UTC 2018
+Tue Jan 16 08:59:34 UTC 2018
+Tue Jan 16 08:59:35 UTC 2018
+Tue Jan 16 08:59:36 UTC 2018
+Tue Jan 16 08:59:37 UTC 2018
+Tue Jan 16 08:59:38 UTC 2018
+Tue Jan 16 08:59:39 UTC 2018
+Tue Jan 16 08:59:40 UTC 2018
+Tue Jan 16 08:59:41 UTC 2018
+Tue Jan 16 08:59:42 UTC 2018
+Tue Jan 16 08:59:43 UTC 2018
+Tue Jan 16 08:59:44 UTC 2018
+Tue Jan 16 08:59:45 UTC 2018
+Tue Jan 16 08:59:46 UTC 2018
+Tue Jan 16 08:59:47 UTC 2018
+Tue Jan 16 08:59:48 UTC 2018
+Tue Jan 16 08:59:49 UTC 2018
+Tue Jan 16 08:59:50 UTC 2018
+Tue Jan 16 08:59:51 UTC 2018
+Tue Jan 16 08:59:52 UTC 2018
+Tue Jan 16 08:59:53 UTC 2018
+Tue Jan 16 08:59:54 UTC 2018
+Tue Jan 16 08:59:55 UTC 2018
+Tue Jan 16 08:59:56 UTC 2018
+Tue Jan 16 08:59:57 UTC 2018
+Tue Jan 16 08:59:58 UTC 2018
+Tue Jan 16 08:59:59 UTC 2018
+Tue Jan 16 09:00:00 UTC 2018
+Tue Jan 16 09:00:01 UTC 2018
+Tue Jan 16 09:00:02 UTC 2018
+Tue Jan 16 09:00:03 UTC 2018
+Tue Jan 16 09:00:04 UTC 2018
+Tue Jan 16 09:00:05 UTC 2018
+Tue Jan 16 09:00:06 UTC 2018
+Tue Jan 16 09:00:07 UTC 2018
+Tue Jan 16 09:00:08 UTC 2018
+Tue Jan 16 09:00:09 UTC 2018
+Tue Jan 16 09:00:10 UTC 2018
+Tue Jan 16 09:00:11 UTC 2018
+Tue Jan 16 09:00:12 UTC 2018
+Tue Jan 16 09:00:13 UTC 2018
+Tue Jan 16 09:00:14 UTC 2018
+Tue Jan 16 09:00:15 UTC 2018
+Tue Jan 16 09:00:16 UTC 2018
+Tue Jan 16 09:00:17 UTC 2018
+Tue Jan 16 09:00:18 UTC 2018
+Tue Jan 16 09:00:19 UTC 2018
+Tue Jan 16 09:00:20 UTC 2018
+Tue Jan 16 09:00:21 UTC 2018
+Tue Jan 16 09:00:22 UTC 2018
+Tue Jan 16 09:00:23 UTC 2018
+Tue Jan 16 09:00:24 UTC 2018
+Tue Jan 16 09:00:25 UTC 2018
+Tue Jan 16 09:00:26 UTC 2018
+Tue Jan 16 09:00:27 UTC 2018
+Tue Jan 16 09:00:28 UTC 2018
+Tue Jan 16 09:00:29 UTC 2018
+Tue Jan 16 09:00:30 UTC 2018
+Tue Jan 16 09:00:31 UTC 2018
+Tue Jan 16 09:00:32 UTC 2018
+Tue Jan 16 09:00:33 UTC 2018
+Tue Jan 16 09:00:34 UTC 2018
+Tue Jan 16 09:00:35 UTC 2018
+Tue Jan 16 09:00:36 UTC 2018
+Tue Jan 16 09:00:37 UTC 2018
+Tue Jan 16 09:00:38 UTC 2018
+Tue Jan 16 09:00:39 UTC 2018
+Tue Jan 16 09:00:40 UTC 2018
+Tue Jan 16 09:00:41 UTC 2018
+Tue Jan 16 09:00:42 UTC 2018
+Tue Jan 16 09:00:43 UTC 2018
+Tue Jan 16 09:00:44 UTC 2018
+Tue Jan 16 09:00:45 UTC 2018
+Tue Jan 16 09:00:46 UTC 2018
+Tue Jan 16 09:00:47 UTC 2018
+Tue Jan 16 09:00:48 UTC 2018
+Tue Jan 16 09:00:49 UTC 2018
+Tue Jan 16 09:00:50 UTC 2018
+Tue Jan 16 09:00:51 UTC 2018
+Tue Jan 16 09:00:52 UTC 2018
+Tue Jan 16 09:00:53 UTC 2018
+Tue Jan 16 09:00:54 UTC 2018
+Tue Jan 16 09:00:55 UTC 2018
+Tue Jan 16 09:00:56 UTC 2018
+Tue Jan 16 09:00:57 UTC 2018
+Tue Jan 16 09:00:58 UTC 2018
+Tue Jan 16 09:00:59 UTC 2018
+Tue Jan 16 09:01:00 UTC 2018
+Tue Jan 16 09:01:01 UTC 2018
+Tue Jan 16 09:01:02 UTC 2018
+Tue Jan 16 09:01:03 UTC 2018
+Tue Jan 16 09:01:04 UTC 2018
+Tue Jan 16 09:01:05 UTC 2018
+Tue Jan 16 09:01:06 UTC 2018
+Tue Jan 16 09:01:07 UTC 2018
+Tue Jan 16 09:01:08 UTC 2018
+Tue Jan 16 09:01:09 UTC 2018
+Tue Jan 16 09:01:10 UTC 2018
+Tue Jan 16 09:01:11 UTC 2018
+Tue Jan 16 09:01:12 UTC 2018
+Tue Jan 16 09:01:13 UTC 2018
+Tue Jan 16 09:01:14 UTC 2018
+Tue Jan 16 09:01:15 UTC 2018
+Tue Jan 16 09:01:16 UTC 2018
+Tue Jan 16 09:01:17 UTC 2018
+Tue Jan 16 09:01:18 UTC 2018
+Tue Jan 16 09:01:19 UTC 2018
+Tue Jan 16 09:01:20 UTC 2018
+Tue Jan 16 09:01:21 UTC 2018
+Tue Jan 16 09:01:22 UTC 2018
+Tue Jan 16 09:01:23 UTC 2018
+Tue Jan 16 09:01:24 UTC 2018
+Tue Jan 16 09:01:25 UTC 2018
+Tue Jan 16 09:01:26 UTC 2018
+Tue Jan 16 09:01:27 UTC 2018
+Tue Jan 16 09:01:28 UTC 2018
+Tue Jan 16 09:01:29 UTC 2018
+Tue Jan 16 09:01:30 UTC 2018
+Tue Jan 16 09:01:31 UTC 2018
+Tue Jan 16 09:01:32 UTC 2018
+Tue Jan 16 09:01:33 UTC 2018
+Tue Jan 16 09:01:34 UTC 2018
+Tue Jan 16 09:01:35 UTC 2018
+Tue Jan 16 09:01:36 UTC 2018
+Tue Jan 16 09:01:37 UTC 2018
+Tue Jan 16 09:01:38 UTC 2018
+Tue Jan 16 09:01:39 UTC 2018
+Tue Jan 16 09:01:40 UTC 2018
+Tue Jan 16 09:01:41 UTC 2018
+Tue Jan 16 09:01:42 UTC 2018
+Tue Jan 16 09:01:43 UTC 2018
+Tue Jan 16 09:01:44 UTC 2018
+Tue Jan 16 09:01:45 UTC 2018
+Tue Jan 16 09:01:46 UTC 2018
+Tue Jan 16 09:01:47 UTC 2018
+Tue Jan 16 09:01:48 UTC 2018
+Tue Jan 16 09:01:49 UTC 2018
+Tue Jan 16 09:01:50 UTC 2018
+Tue Jan 16 09:01:51 UTC 2018
+Tue Jan 16 09:01:52 UTC 2018
+Tue Jan 16 09:01:53 UTC 2018
+Tue Jan 16 09:01:54 UTC 2018
+Tue Jan 16 09:01:55 UTC 2018
+Tue Jan 16 09:01:56 UTC 2018
+Tue Jan 16 09:01:57 UTC 2018
+Tue Jan 16 09:01:58 UTC 2018
+Tue Jan 16 09:01:59 UTC 2018
+Tue Jan 16 09:02:00 UTC 2018
+Tue Jan 16 09:02:01 UTC 2018
+Tue Jan 16 09:02:02 UTC 2018
+Tue Jan 16 09:02:03 UTC 2018
+Tue Jan 16 09:02:04 UTC 2018
+Tue Jan 16 09:02:05 UTC 2018
+Tue Jan 16 09:02:06 UTC 2018
+Tue Jan 16 09:02:07 UTC 2018
+Tue Jan 16 09:02:08 UTC 2018
+Tue Jan 16 09:02:09 UTC 2018
+Tue Jan 16 09:02:10 UTC 2018
+Tue Jan 16 09:02:11 UTC 2018
+Tue Jan 16 09:02:12 UTC 2018
+Tue Jan 16 09:02:13 UTC 2018
+Tue Jan 16 09:02:14 UTC 2018
+Tue Jan 16 09:02:15 UTC 2018
+Tue Jan 16 09:02:16 UTC 2018
+Tue Jan 16 09:02:17 UTC 2018
+Tue Jan 16 09:02:18 UTC 2018
+Tue Jan 16 09:02:19 UTC 2018
+Tue Jan 16 09:02:21 UTC 2018
+Tue Jan 16 09:02:22 UTC 2018
+Tue Jan 16 09:02:23 UTC 2018
+Tue Jan 16 09:02:24 UTC 2018
+Tue Jan 16 09:02:25 UTC 2018
+Tue Jan 16 09:02:26 UTC 2018
+Tue Jan 16 09:02:27 UTC 2018
+Tue Jan 16 09:02:28 UTC 2018
+Tue Jan 16 09:02:29 UTC 2018
+Tue Jan 16 09:02:30 UTC 2018
+Tue Jan 16 09:02:31 UTC 2018
+Tue Jan 16 09:02:32 UTC 2018
+Tue Jan 16 09:02:33 UTC 2018
+Tue Jan 16 09:02:34 UTC 2018
+Tue Jan 16 09:02:35 UTC 2018
+Tue Jan 16 09:02:36 UTC 2018
+Tue Jan 16 09:02:37 UTC 2018
+Tue Jan 16 09:02:38 UTC 2018
+Tue Jan 16 09:02:39 UTC 2018
+Tue Jan 16 09:02:40 UTC 2018
+Tue Jan 16 09:02:41 UTC 2018
+Tue Jan 16 09:02:42 UTC 2018
+Tue Jan 16 09:02:43 UTC 2018
+Tue Jan 16 09:02:44 UTC 2018
+Tue Jan 16 09:02:45 UTC 2018
+Tue Jan 16 09:02:46 UTC 2018
+Tue Jan 16 09:02:47 UTC 2018
+Tue Jan 16 09:02:48 UTC 2018
+Tue Jan 16 09:02:49 UTC 2018
+Tue Jan 16 09:02:50 UTC 2018
+Tue Jan 16 09:02:51 UTC 2018
+Tue Jan 16 09:02:52 UTC 2018
+Tue Jan 16 09:02:53 UTC 2018
+Tue Jan 16 09:02:54 UTC 2018
+Tue Jan 16 09:02:55 UTC 2018
+Tue Jan 16 09:02:56 UTC 2018
+Tue Jan 16 09:02:57 UTC 2018
+Tue Jan 16 09:02:58 UTC 2018
+Tue Jan 16 09:02:59 UTC 2018
+Tue Jan 16 09:03:00 UTC 2018
+Tue Jan 16 09:03:01 UTC 2018
+Tue Jan 16 09:03:02 UTC 2018
+Tue Jan 16 09:03:03 UTC 2018
+Tue Jan 16 09:03:04 UTC 2018
+Tue Jan 16 09:03:05 UTC 2018
+Tue Jan 16 09:03:06 UTC 2018
+Tue Jan 16 09:03:07 UTC 2018
+Tue Jan 16 09:03:08 UTC 2018
+Tue Jan 16 09:03:09 UTC 2018
+Tue Jan 16 09:03:10 UTC 2018
+Tue Jan 16 09:03:11 UTC 2018
+Tue Jan 16 09:03:12 UTC 2018
+Tue Jan 16 09:03:13 UTC 2018
+Tue Jan 16 09:03:14 UTC 2018
+Tue Jan 16 09:03:15 UTC 2018
+Tue Jan 16 09:03:16 UTC 2018
+Tue Jan 16 09:03:17 UTC 2018
+Tue Jan 16 09:03:18 UTC 2018
+Tue Jan 16 09:03:19 UTC 2018
+Tue Jan 16 09:03:20 UTC 2018
+Tue Jan 16 09:03:21 UTC 2018
+Tue Jan 16 09:03:22 UTC 2018
+Tue Jan 16 09:03:23 UTC 2018
+Tue Jan 16 09:03:24 UTC 2018
+Tue Jan 16 09:03:25 UTC 2018
+Tue Jan 16 09:03:26 UTC 2018
+Tue Jan 16 09:03:27 UTC 2018
+Tue Jan 16 09:03:28 UTC 2018
+Tue Jan 16 09:03:29 UTC 2018
+Tue Jan 16 09:03:30 UTC 2018
+Tue Jan 16 09:03:31 UTC 2018
+Tue Jan 16 09:03:32 UTC 2018
+Tue Jan 16 09:03:33 UTC 2018
+Tue Jan 16 09:03:34 UTC 2018
+Tue Jan 16 09:03:35 UTC 2018
+Tue Jan 16 09:03:36 UTC 2018
+Tue Jan 16 09:03:37 UTC 2018
+Tue Jan 16 09:03:38 UTC 2018
+Tue Jan 16 09:03:39 UTC 2018
+Tue Jan 16 09:03:40 UTC 2018
+Tue Jan 16 09:03:41 UTC 2018
+Tue Jan 16 09:03:42 UTC 2018
+Tue Jan 16 09:03:43 UTC 2018
+Tue Jan 16 09:03:44 UTC 2018
+Tue Jan 16 09:03:45 UTC 2018
+Tue Jan 16 09:03:46 UTC 2018
+Tue Jan 16 09:03:47 UTC 2018
+Tue Jan 16 09:03:48 UTC 2018
+Tue Jan 16 09:03:49 UTC 2018
+Tue Jan 16 09:03:50 UTC 2018
+Tue Jan 16 09:03:51 UTC 2018
+Tue Jan 16 09:03:52 UTC 2018
+Tue Jan 16 09:03:53 UTC 2018
+Tue Jan 16 09:03:54 UTC 2018
+Tue Jan 16 09:03:55 UTC 2018
+Tue Jan 16 09:03:56 UTC 2018
+Tue Jan 16 09:03:57 UTC 2018
+Tue Jan 16 09:03:58 UTC 2018
+Tue Jan 16 09:03:59 UTC 2018
+Tue Jan 16 09:04:00 UTC 2018
+Tue Jan 16 09:04:01 UTC 2018
+Tue Jan 16 09:04:02 UTC 2018
+Tue Jan 16 09:04:03 UTC 2018
+Tue Jan 16 09:04:04 UTC 2018
+Tue Jan 16 09:04:05 UTC 2018
+Tue Jan 16 09:04:06 UTC 2018
+Tue Jan 16 09:04:07 UTC 2018
+Tue Jan 16 09:04:08 UTC 2018
+Tue Jan 16 09:04:09 UTC 2018
+Tue Jan 16 09:04:10 UTC 2018
+Tue Jan 16 09:04:11 UTC 2018
+Tue Jan 16 09:04:12 UTC 2018
+Tue Jan 16 09:04:13 UTC 2018
+Tue Jan 16 09:04:14 UTC 2018
+Tue Jan 16 09:04:15 UTC 2018
+Tue Jan 16 09:04:16 UTC 2018
+Tue Jan 16 09:04:17 UTC 2018
+Tue Jan 16 09:04:18 UTC 2018
+Tue Jan 16 09:04:19 UTC 2018
+Tue Jan 16 09:04:20 UTC 2018
+Tue Jan 16 09:04:21 UTC 2018
+Tue Jan 16 09:04:22 UTC 2018
+Tue Jan 16 09:04:23 UTC 2018
+Tue Jan 16 09:04:24 UTC 2018
+Tue Jan 16 09:04:25 UTC 2018
+Tue Jan 16 09:04:26 UTC 2018
+Tue Jan 16 09:04:27 UTC 2018
+Tue Jan 16 09:04:28 UTC 2018
+Tue Jan 16 09:04:29 UTC 2018
+Tue Jan 16 09:04:30 UTC 2018
+Tue Jan 16 09:04:31 UTC 2018
+Tue Jan 16 09:04:32 UTC 2018
+Tue Jan 16 09:04:33 UTC 2018
+Tue Jan 16 09:04:34 UTC 2018
+Tue Jan 16 09:04:35 UTC 2018
+Tue Jan 16 09:04:36 UTC 2018
+Tue Jan 16 09:04:37 UTC 2018
+Tue Jan 16 09:04:38 UTC 2018
+Tue Jan 16 09:04:39 UTC 2018
+Tue Jan 16 09:04:40 UTC 2018
+Tue Jan 16 09:04:41 UTC 2018
+Tue Jan 16 09:04:42 UTC 2018
+Tue Jan 16 09:04:43 UTC 2018
+Tue Jan 16 09:04:44 UTC 2018
+Tue Jan 16 09:04:45 UTC 2018
+Tue Jan 16 09:04:46 UTC 2018
+Tue Jan 16 09:04:47 UTC 2018
+Tue Jan 16 09:04:48 UTC 2018
+Tue Jan 16 09:04:49 UTC 2018
+Tue Jan 16 09:04:50 UTC 2018
+Tue Jan 16 09:04:51 UTC 2018
+Tue Jan 16 09:04:52 UTC 2018
+Tue Jan 16 09:04:53 UTC 2018
+Tue Jan 16 09:04:54 UTC 2018
+Tue Jan 16 09:04:55 UTC 2018
+Tue Jan 16 09:04:56 UTC 2018
+^C
+[usere@lx-12-5 hello-world]$ docker container run -d --name mydb -e MYSQL_ROOT=passwd mysql
+Unable to find image 'mysql:latest' locally
+latest: Pulling from library/mysql
+f49cf87b52c1: Pull complete 
+78032de49d65: Pull complete 
+837546b20bc4: Pull complete 
+9b8316af6cc6: Pull complete 
+1056cf29b9f1: Pull complete 
+86f3913b029a: Pull complete 
+f98eea8321ca: Pull complete 
+3a8e3ebdeaf5: Pull complete 
+4be06ac1c51e: Pull complete 
+920c7ffb7747: Pull complete 
+Digest: sha256:7cdb08f30a54d109ddded59525937592cb6852ff635a546626a8960d9ec34c30
+Status: Downloaded newer image for mysql:latest
+b744cdbb85640aa54109bc025bb273fc028d7d37911c66cf340a9aeeb04e091d
+[usere@lx-12-5 hello-world]$ docker container run -d --name mydb -e MYSQL_ROOT=passwd mysql
+docker: Error response from daemon: Conflict. The container name "/mydb" is already in use by container "b744cdbb85640aa54109bc025bb273fc028d7d37911c66cf340a9aeeb04e091d". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+[usere@lx-12-5 hello-world]$ docker container logs b744cdbb85640aa54109bc025
+error: database is uninitialized and password option is not specified 
+  You need to specify one of MYSQL_ROOT_PASSWORD, MYSQL_ALLOW_EMPTY_PASSWORD and MYSQL_RANDOM_ROOT_PASSWORD
+[usere@lx-12-5 hello-world]$ docker container run -d --name mydb -e MYSQL_ROOT_PASSWORD=passwd mysql
+docker: Error response from daemon: Conflict. The container name "/mydb" is already in use by container "b744cdbb85640aa54109bc025bb273fc028d7d37911c66cf340a9aeeb04e091d". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+[usere@lx-12-5 hello-world]$ docker container rm mydb
+mydb
+[usere@lx-12-5 hello-world]$ docker container run -d --name mydb -e MYSQL_ROOT_PASSWORD=passwd mysql
+fd8378f9665428699c564a4cb44b3f2df6381a0e731feb2890793107c2572da5
+[usere@lx-12-5 hello-world]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                   NAMES
+fd8378f96654        mysql               "docker-entrypoint.s…"   18 seconds ago      Up 17 seconds       3306/tcp                mydb
+505386514dd1        jpetazzo/clock      "/bin/sh -c 'while d…"   30 minutes ago      Up 30 minutes                               stupefied_bardeen
+19bf0a13ef81        nginx:alpine        "nginx -g 'daemon of…"   34 minutes ago      Up 34 minutes       0.0.0.0:32768->80/tcp   web
+[usere@lx-12-5 hello-world]$ docker container top mydb
+UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD
+polkitd             12913               12898               0                   10:26               ?                   00:00:00            mysqld
+[usere@lx-12-5 hello-world]$ docker container logs mydb
+Initializing database
+2018-01-16T09:26:36.148728Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation for more details).
+2018-01-16T09:26:36.514205Z 0 [Warning] InnoDB: New log files created, LSN=45790
+2018-01-16T09:26:36.587868Z 0 [Warning] InnoDB: Creating foreign key constraint system tables.
+2018-01-16T09:26:36.659000Z 0 [Warning] No existing UUID has been found, so we assume that this is the first time that this server has been started. Generating a new UUID: 5982fadf-fa9f-11e7-afa2-0242ac110004.
+2018-01-16T09:26:36.661826Z 0 [Warning] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2018-01-16T09:26:36.663187Z 1 [Warning] root@localhost is created with an empty password ! Please consider switching off the --initialize-insecure option.
+2018-01-16T09:26:37.733321Z 1 [Warning] 'user' entry 'root@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:37.733339Z 1 [Warning] 'user' entry 'mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:37.733344Z 1 [Warning] 'user' entry 'mysql.sys@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:37.733353Z 1 [Warning] 'db' entry 'performance_schema mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:37.733356Z 1 [Warning] 'db' entry 'sys mysql.sys@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:37.733361Z 1 [Warning] 'proxies_priv' entry '@ root@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:37.733379Z 1 [Warning] 'tables_priv' entry 'user mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:37.733383Z 1 [Warning] 'tables_priv' entry 'sys_config mysql.sys@localhost' ignored in --skip-name-resolve mode.
+Database initialized
+Initializing certificates
+Generating a 2048 bit RSA private key
+...............+++
+...........+++
+unable to write 'random state'
+writing new private key to 'ca-key.pem'
+-----
+Generating a 2048 bit RSA private key
+.....................+++
+...........+++
+unable to write 'random state'
+writing new private key to 'server-key.pem'
+-----
+Generating a 2048 bit RSA private key
+...................................+++
+.+++
+unable to write 'random state'
+writing new private key to 'client-key.pem'
+-----
+Certificates initialized
+MySQL init process in progress...
+2018-01-16T09:26:40.491831Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation for more details).
+2018-01-16T09:26:40.492562Z 0 [Note] mysqld (mysqld 5.7.21) starting as process 92 ...
+2018-01-16T09:26:40.494412Z 0 [Note] InnoDB: PUNCH HOLE support available
+2018-01-16T09:26:40.494422Z 0 [Note] InnoDB: Mutexes and rw_locks use GCC atomic builtins
+2018-01-16T09:26:40.494425Z 0 [Note] InnoDB: Uses event mutexes
+2018-01-16T09:26:40.494426Z 0 [Note] InnoDB: GCC builtin __atomic_thread_fence() is used for memory barrier
+2018-01-16T09:26:40.494429Z 0 [Note] InnoDB: Compressed tables use zlib 1.2.3
+2018-01-16T09:26:40.494430Z 0 [Note] InnoDB: Using Linux native AIO
+2018-01-16T09:26:40.494661Z 0 [Note] InnoDB: Number of pools: 1
+2018-01-16T09:26:40.494755Z 0 [Note] InnoDB: Using CPU crc32 instructions
+2018-01-16T09:26:40.495518Z 0 [Note] InnoDB: Initializing buffer pool, total size = 128M, instances = 1, chunk size = 128M
+2018-01-16T09:26:40.499663Z 0 [Note] InnoDB: Completed initialization of buffer pool
+2018-01-16T09:26:40.500852Z 0 [Note] InnoDB: If the mysqld execution user is authorized, page cleaner thread priority can be changed. See the man page of setpriority().
+2018-01-16T09:26:40.511880Z 0 [Note] InnoDB: Highest supported file format is Barracuda.
+2018-01-16T09:26:40.517477Z 0 [Note] InnoDB: Creating shared tablespace for temporary tables
+2018-01-16T09:26:40.517521Z 0 [Note] InnoDB: Setting file './ibtmp1' size to 12 MB. Physically writing the file full; Please wait ...
+2018-01-16T09:26:40.547992Z 0 [Note] InnoDB: File './ibtmp1' size is now 12 MB.
+2018-01-16T09:26:40.548614Z 0 [Note] InnoDB: 96 redo rollback segment(s) found. 96 redo rollback segment(s) are active.
+2018-01-16T09:26:40.548620Z 0 [Note] InnoDB: 32 non-redo rollback segment(s) are active.
+2018-01-16T09:26:40.548859Z 0 [Note] InnoDB: Waiting for purge to start
+2018-01-16T09:26:40.599073Z 0 [Note] InnoDB: 5.7.21 started; log sequence number 2551166
+2018-01-16T09:26:40.599557Z 0 [Note] InnoDB: Loading buffer pool(s) from /var/lib/mysql/ib_buffer_pool
+2018-01-16T09:26:40.599733Z 0 [Note] Plugin 'FEDERATED' is disabled.
+2018-01-16T09:26:40.601305Z 0 [Note] InnoDB: Buffer pool(s) load completed at 180116  9:26:40
+2018-01-16T09:26:40.605787Z 0 [Note] Found ca.pem, server-cert.pem and server-key.pem in data directory. Trying to enable SSL support using them.
+2018-01-16T09:26:40.606163Z 0 [Warning] CA certificate ca.pem is self signed.
+2018-01-16T09:26:40.630376Z 0 [Warning] 'user' entry 'root@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:40.630450Z 0 [Warning] 'user' entry 'mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:40.630470Z 0 [Warning] 'user' entry 'mysql.sys@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:40.630514Z 0 [Warning] 'db' entry 'performance_schema mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:40.630532Z 0 [Warning] 'db' entry 'sys mysql.sys@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:40.630551Z 0 [Warning] 'proxies_priv' entry '@ root@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:40.633294Z 0 [Warning] 'tables_priv' entry 'user mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:40.633325Z 0 [Warning] 'tables_priv' entry 'sys_config mysql.sys@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:40.643488Z 0 [Note] Event Scheduler: Loaded 0 events
+2018-01-16T09:26:40.643756Z 0 [Note] mysqld: ready for connections.
+Version: '5.7.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 0  MySQL Community Server (GPL)
+Warning: Unable to load '/usr/share/zoneinfo/iso3166.tab' as time zone. Skipping it.
+Warning: Unable to load '/usr/share/zoneinfo/leap-seconds.list' as time zone. Skipping it.
+Warning: Unable to load '/usr/share/zoneinfo/zone.tab' as time zone. Skipping it.
+2018-01-16T09:26:42.613000Z 4 [Warning] 'user' entry 'root@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:42.613047Z 4 [Warning] 'user' entry 'mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:42.613061Z 4 [Warning] 'user' entry 'mysql.sys@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:42.613088Z 4 [Warning] 'db' entry 'performance_schema mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:42.613094Z 4 [Warning] 'db' entry 'sys mysql.sys@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:42.613109Z 4 [Warning] 'proxies_priv' entry '@ root@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:42.613153Z 4 [Warning] 'tables_priv' entry 'user mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:42.613165Z 4 [Warning] 'tables_priv' entry 'sys_config mysql.sys@localhost' ignored in --skip-name-resolve mode.
+
+2018-01-16T09:26:42.615195Z 0 [Note] Giving 0 client threads a chance to die gracefully
+2018-01-16T09:26:42.615218Z 0 [Note] Shutting down slave threads
+2018-01-16T09:26:42.615229Z 0 [Note] Forcefully disconnecting 0 remaining clients
+2018-01-16T09:26:42.615236Z 0 [Note] Event Scheduler: Purging the queue. 0 events
+2018-01-16T09:26:42.615295Z 0 [Note] Binlog end
+2018-01-16T09:26:42.615894Z 0 [Note] Shutting down plugin 'ngram'
+2018-01-16T09:26:42.615909Z 0 [Note] Shutting down plugin 'BLACKHOLE'
+2018-01-16T09:26:42.615917Z 0 [Note] Shutting down plugin 'partition'
+2018-01-16T09:26:42.615922Z 0 [Note] Shutting down plugin 'ARCHIVE'
+2018-01-16T09:26:42.615927Z 0 [Note] Shutting down plugin 'MEMORY'
+2018-01-16T09:26:42.615936Z 0 [Note] Shutting down plugin 'INNODB_SYS_VIRTUAL'
+2018-01-16T09:26:42.615943Z 0 [Note] Shutting down plugin 'INNODB_SYS_DATAFILES'
+2018-01-16T09:26:42.615947Z 0 [Note] Shutting down plugin 'INNODB_SYS_TABLESPACES'
+2018-01-16T09:26:42.615950Z 0 [Note] Shutting down plugin 'INNODB_SYS_FOREIGN_COLS'
+2018-01-16T09:26:42.615954Z 0 [Note] Shutting down plugin 'INNODB_SYS_FOREIGN'
+2018-01-16T09:26:42.615957Z 0 [Note] Shutting down plugin 'INNODB_SYS_FIELDS'
+2018-01-16T09:26:42.615961Z 0 [Note] Shutting down plugin 'INNODB_SYS_COLUMNS'
+2018-01-16T09:26:42.615964Z 0 [Note] Shutting down plugin 'INNODB_SYS_INDEXES'
+2018-01-16T09:26:42.615967Z 0 [Note] Shutting down plugin 'INNODB_SYS_TABLESTATS'
+2018-01-16T09:26:42.615971Z 0 [Note] Shutting down plugin 'INNODB_SYS_TABLES'
+2018-01-16T09:26:42.615975Z 0 [Note] Shutting down plugin 'INNODB_FT_INDEX_TABLE'
+2018-01-16T09:26:42.615978Z 0 [Note] Shutting down plugin 'INNODB_FT_INDEX_CACHE'
+2018-01-16T09:26:42.615981Z 0 [Note] Shutting down plugin 'INNODB_FT_CONFIG'
+2018-01-16T09:26:42.615985Z 0 [Note] Shutting down plugin 'INNODB_FT_BEING_DELETED'
+2018-01-16T09:26:42.615988Z 0 [Note] Shutting down plugin 'INNODB_FT_DELETED'
+2018-01-16T09:26:42.615992Z 0 [Note] Shutting down plugin 'INNODB_FT_DEFAULT_STOPWORD'
+2018-01-16T09:26:42.615997Z 0 [Note] Shutting down plugin 'INNODB_METRICS'
+2018-01-16T09:26:42.616003Z 0 [Note] Shutting down plugin 'INNODB_TEMP_TABLE_INFO'
+2018-01-16T09:26:42.616008Z 0 [Note] Shutting down plugin 'INNODB_BUFFER_POOL_STATS'
+2018-01-16T09:26:42.616012Z 0 [Note] Shutting down plugin 'INNODB_BUFFER_PAGE_LRU'
+2018-01-16T09:26:42.616015Z 0 [Note] Shutting down plugin 'INNODB_BUFFER_PAGE'
+2018-01-16T09:26:42.616019Z 0 [Note] Shutting down plugin 'INNODB_CMP_PER_INDEX_RESET'
+2018-01-16T09:26:42.616023Z 0 [Note] Shutting down plugin 'INNODB_CMP_PER_INDEX'
+2018-01-16T09:26:42.616026Z 0 [Note] Shutting down plugin 'INNODB_CMPMEM_RESET'
+2018-01-16T09:26:42.616029Z 0 [Note] Shutting down plugin 'INNODB_CMPMEM'
+2018-01-16T09:26:42.616044Z 0 [Note] Shutting down plugin 'INNODB_CMP_RESET'
+2018-01-16T09:26:42.616048Z 0 [Note] Shutting down plugin 'INNODB_CMP'
+2018-01-16T09:26:42.616052Z 0 [Note] Shutting down plugin 'INNODB_LOCK_WAITS'
+2018-01-16T09:26:42.616056Z 0 [Note] Shutting down plugin 'INNODB_LOCKS'
+2018-01-16T09:26:42.616059Z 0 [Note] Shutting down plugin 'INNODB_TRX'
+2018-01-16T09:26:42.616063Z 0 [Note] Shutting down plugin 'InnoDB'
+2018-01-16T09:26:42.616123Z 0 [Note] InnoDB: FTS optimize thread exiting.
+2018-01-16T09:26:42.616313Z 0 [Note] InnoDB: Starting shutdown...
+2018-01-16T09:26:42.716550Z 0 [Note] InnoDB: Dumping buffer pool(s) to /var/lib/mysql/ib_buffer_pool
+2018-01-16T09:26:42.716757Z 0 [Note] InnoDB: Buffer pool(s) dump completed at 180116  9:26:42
+2018-01-16T09:26:44.535776Z 0 [Note] InnoDB: Shutdown completed; log sequence number 12142448
+2018-01-16T09:26:44.537333Z 0 [Note] InnoDB: Removed temporary tablespace data file: "ibtmp1"
+2018-01-16T09:26:44.537341Z 0 [Note] Shutting down plugin 'MyISAM'
+2018-01-16T09:26:44.537350Z 0 [Note] Shutting down plugin 'MRG_MYISAM'
+2018-01-16T09:26:44.537353Z 0 [Note] Shutting down plugin 'CSV'
+2018-01-16T09:26:44.537356Z 0 [Note] Shutting down plugin 'PERFORMANCE_SCHEMA'
+2018-01-16T09:26:44.537371Z 0 [Note] Shutting down plugin 'sha256_password'
+2018-01-16T09:26:44.537373Z 0 [Note] Shutting down plugin 'mysql_native_password'
+2018-01-16T09:26:44.537476Z 0 [Note] Shutting down plugin 'binlog'
+2018-01-16T09:26:44.537741Z 0 [Note] mysqld: Shutdown complete
+
+
+MySQL init process done. Ready for start up.
+
+2018-01-16T09:26:44.765417Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation for more details).
+2018-01-16T09:26:44.766188Z 0 [Note] mysqld (mysqld 5.7.21) starting as process 1 ...
+2018-01-16T09:26:44.768009Z 0 [Note] InnoDB: PUNCH HOLE support available
+2018-01-16T09:26:44.768019Z 0 [Note] InnoDB: Mutexes and rw_locks use GCC atomic builtins
+2018-01-16T09:26:44.768022Z 0 [Note] InnoDB: Uses event mutexes
+2018-01-16T09:26:44.768024Z 0 [Note] InnoDB: GCC builtin __atomic_thread_fence() is used for memory barrier
+2018-01-16T09:26:44.768045Z 0 [Note] InnoDB: Compressed tables use zlib 1.2.3
+2018-01-16T09:26:44.768047Z 0 [Note] InnoDB: Using Linux native AIO
+2018-01-16T09:26:44.768275Z 0 [Note] InnoDB: Number of pools: 1
+2018-01-16T09:26:44.768369Z 0 [Note] InnoDB: Using CPU crc32 instructions
+2018-01-16T09:26:44.769141Z 0 [Note] InnoDB: Initializing buffer pool, total size = 128M, instances = 1, chunk size = 128M
+2018-01-16T09:26:44.773295Z 0 [Note] InnoDB: Completed initialization of buffer pool
+2018-01-16T09:26:44.774508Z 0 [Note] InnoDB: If the mysqld execution user is authorized, page cleaner thread priority can be changed. See the man page of setpriority().
+2018-01-16T09:26:44.785535Z 0 [Note] InnoDB: Highest supported file format is Barracuda.
+2018-01-16T09:26:44.790897Z 0 [Note] InnoDB: Creating shared tablespace for temporary tables
+2018-01-16T09:26:44.790939Z 0 [Note] InnoDB: Setting file './ibtmp1' size to 12 MB. Physically writing the file full; Please wait ...
+2018-01-16T09:26:44.821430Z 0 [Note] InnoDB: File './ibtmp1' size is now 12 MB.
+2018-01-16T09:26:44.821942Z 0 [Note] InnoDB: 96 redo rollback segment(s) found. 96 redo rollback segment(s) are active.
+2018-01-16T09:26:44.821950Z 0 [Note] InnoDB: 32 non-redo rollback segment(s) are active.
+2018-01-16T09:26:44.822273Z 0 [Note] InnoDB: Waiting for purge to start
+2018-01-16T09:26:44.872491Z 0 [Note] InnoDB: 5.7.21 started; log sequence number 12142448
+2018-01-16T09:26:44.873065Z 0 [Note] InnoDB: Loading buffer pool(s) from /var/lib/mysql/ib_buffer_pool
+2018-01-16T09:26:44.873465Z 0 [Note] Plugin 'FEDERATED' is disabled.
+2018-01-16T09:26:44.877216Z 0 [Note] InnoDB: Buffer pool(s) load completed at 180116  9:26:44
+2018-01-16T09:26:44.879163Z 0 [Note] Found ca.pem, server-cert.pem and server-key.pem in data directory. Trying to enable SSL support using them.
+2018-01-16T09:26:44.879594Z 0 [Warning] CA certificate ca.pem is self signed.
+2018-01-16T09:26:44.883420Z 0 [Note] Server hostname (bind-address): '*'; port: 3306
+2018-01-16T09:26:44.883497Z 0 [Note] IPv6 is available.
+2018-01-16T09:26:44.883513Z 0 [Note]   - '::' resolves to '::';
+2018-01-16T09:26:44.883541Z 0 [Note] Server socket created on IP: '::'.
+2018-01-16T09:26:44.905022Z 0 [Warning] 'user' entry 'root@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:44.905070Z 0 [Warning] 'user' entry 'mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:44.905079Z 0 [Warning] 'user' entry 'mysql.sys@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:44.905101Z 0 [Warning] 'db' entry 'performance_schema mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:44.905106Z 0 [Warning] 'db' entry 'sys mysql.sys@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:44.905119Z 0 [Warning] 'proxies_priv' entry '@ root@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:44.906896Z 0 [Warning] 'tables_priv' entry 'user mysql.session@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:44.906911Z 0 [Warning] 'tables_priv' entry 'sys_config mysql.sys@localhost' ignored in --skip-name-resolve mode.
+2018-01-16T09:26:44.910896Z 0 [Note] Event Scheduler: Loaded 0 events
+2018-01-16T09:26:44.911022Z 0 [Note] mysqld: ready for connections.
+Version: '5.7.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server (GPL)
+[usere@lx-12-5 hello-world]$ docker container exec mydb mysql --version
+mysql  Ver 14.14 Distrib 5.7.21, for Linux (x86_64) using  EditLine wrapper
+[usere@lx-12-5 hello-world]$ docker container exec -it  mydb mysql -u root -ppasswd
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 2
+Server version: 5.7.21 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> exit
+Bye
+[usere@lx-12-5 hello-world]$ docker container exec -it  mydb mysql sh
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: NO)
+[usere@lx-12-5 hello-world]$ docker container exec -it  mydb mysql -u root -ppasswd
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 4
+Server version: 5.7.21 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> exit
+Bye
+[usere@lx-12-5 hello-world]$ docker container exec -it  mydb mysql sh
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: NO)
+[usere@lx-12-5 hello-world]$ docker container exec -it  mydb sh
+# ls
+bin   docker-entrypoint-initdb.d  home	 media	proc  sbin  tmp
+boot  entrypoint.sh		  lib	 mnt	root  srv   usr
+dev   etc			  lib64  opt	run   sys   var
+# mysql
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: NO)
+# mysql -u root
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: NO)
+# exit
+[usere@lx-12-5 hello-world]$ cd ..
+[usere@lx-12-5 tp1]$ pwd
+/home/usere/Documents/training_docker/day2/tp1
+[usere@lx-12-5 tp1]$ cd ..
+[usere@lx-12-5 day2]$ git clone https://github.com/dockersamples/linux_tweet_app.git
+Cloning into 'linux_tweet_app'...
+remote: Counting objects: 14, done.
+remote: Total 14 (delta 0), reused 0 (delta 0), pack-reused 14
+Unpacking objects: 100% (14/14), done.
+[usere@lx-12-5 day2]$ ls
+linux_tweet_app  tp1
+[usere@lx-12-5 day2]$ cd linux_tweet_app/
+[usere@lx-12-5 linux_tweet_app]$ ls
+Dockerfile  index.html  index-new.html  index-original.html  linux.png  README.md
+[usere@lx-12-5 linux_tweet_app]$ vim Dockerfile 
+[usere@lx-12-5 linux_tweet_app]$ docker container stop ( docker container ls -q)
+bash: Erreur de syntaxe près du symbole inattendu « ( »
+[usere@lx-12-5 linux_tweet_app]$ docker container stop $( docker container ls -q)
+fd8378f96654
+505386514dd1
+19bf0a13ef81
+[usere@lx-12-5 linux_tweet_app]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+[usere@lx-12-5 linux_tweet_app]$ docker run -d -P nginx 
+Unable to find image 'nginx:latest' locally
+latest: Pulling from library/nginx
+e7bb522d92ff: Pull complete 
+6edc05228666: Pull complete 
+cd866a17e81f: Pull complete 
+Digest: sha256:285b49d42c703fdf257d1e2422765c4ba9d3e37768d6ea83d7fe2043dad6e63d
+Status: Downloaded newer image for nginx:latest
+1dc72cdbedfd5c55b0a931d2cf2fa1ac9fa3f76295517e452d8d96951c37c3b7
+[usere@lx-12-5 linux_tweet_app]$ ls
+Dockerfile  index.html  index-new.html  index-original.html  linux.png  README.md
+[usere@lx-12-5 linux_tweet_app]$ docker image build -t linux_tweet_app:v1.
+"docker image build" requires exactly 1 argument.
+See 'docker image build --help'.
+
+Usage:  docker image build [OPTIONS] PATH | URL | - [flags]
+
+Build an image from a Dockerfile
+[usere@lx-12-5 linux_tweet_app]$ docker image build -t linux_tweet_app:v1 .
+Sending build context to Docker daemon    108kB
+Step 1/5 : FROM nginx:latest
+ ---> 3f8a4339aadd
+Step 2/5 : COPY index.html /usr/share/nginx/html
+ ---> 427fbbc84b53
+Step 3/5 : COPY linux.png /usr/share/nginx/html
+ ---> d6e4b57e4836
+Step 4/5 : EXPOSE 80 443
+ ---> Running in 95ab2571e0ce
+Removing intermediate container 95ab2571e0ce
+ ---> db9d687d7095
+Step 5/5 : CMD ["nginx", "-g", "daemon off;"]
+ ---> Running in 6757929dde39
+Removing intermediate container 6757929dde39
+ ---> 3601b8e958ca
+Successfully built 3601b8e958ca
+Successfully tagged linux_tweet_app:v1
+[usere@lx-12-5 linux_tweet_app]$ docker image ls
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+linux_tweet_app     v1                  3601b8e958ca        54 seconds ago      108MB
+jthorel/hello       latest              1af7800085e0        2 hours ago         200B
+vide                latest              d3255d1d1d47        2 hours ago         0B
+mysql               latest              f008d8ff927d        13 hours ago        409MB
+jthorel/stress      latest              4b47e03f7836        21 hours ago        150MB
+jthorel/layers3     latest              6f152b535efb        23 hours ago        4.14MB
+jthorel/lauers      latest              df96fb923935        23 hours ago        4.14MB
+jthorel/layers2     latest              df96fb923935        23 hours ago        4.14MB
+jthorel/lauers1     latest              d6be31548de4        23 hours ago        4.14MB
+jthorel/layers1     latest              d6be31548de4        23 hours ago        4.14MB
+nginx               alpine              bb00c21b4edf        6 days ago          16.8MB
+alpine              latest              3fd9065eaf02        6 days ago          4.14MB
+nginx               latest              3f8a4339aadd        2 weeks ago         108MB
+ubuntu              latest              00fd29ccc6f1        4 weeks ago         111MB
+sjourdan/strace     latest              058defe9f66a        10 months ago       5.96MB
+jpetazzo/clock      latest              12068b93616f        2 years ago         2.43MB
+[usere@lx-12-5 linux_tweet_app]$ docker image history linux_tweet_app
+Error response from daemon: No such image: linux_tweet_app:latest
+[usere@lx-12-5 linux_tweet_app]$ docker image history linux_tweet_app:v1
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+3601b8e958ca        3 minutes ago       /bin/sh -c #(nop)  CMD ["nginx" "-g" "daemon…   0B                  
+db9d687d7095        3 minutes ago       /bin/sh -c #(nop)  EXPOSE 443 80                0B                  
+d6e4b57e4836        3 minutes ago       /bin/sh -c #(nop) COPY file:e23318324cc2dfd5…   22.4kB              
+427fbbc84b53        3 minutes ago       /bin/sh -c #(nop) COPY file:805c7684476dd585…   1.59kB              
+3f8a4339aadd        2 weeks ago         /bin/sh -c #(nop)  CMD ["nginx" "-g" "daemon…   0B                  
+<missing>           2 weeks ago         /bin/sh -c #(nop)  STOPSIGNAL [SIGTERM]         0B                  
+<missing>           2 weeks ago         /bin/sh -c #(nop)  EXPOSE 80/tcp                0B                  
+<missing>           2 weeks ago         /bin/sh -c ln -sf /dev/stdout /var/log/nginx…   0B                  
+<missing>           2 weeks ago         /bin/sh -c set -x  && apt-get update  && apt…   53.2MB              
+<missing>           2 weeks ago         /bin/sh -c #(nop)  ENV NJS_VERSION=1.13.8.0.…   0B                  
+<missing>           2 weeks ago         /bin/sh -c #(nop)  ENV NGINX_VERSION=1.13.8-…   0B                  
+<missing>           5 weeks ago         /bin/sh -c #(nop)  LABEL maintainer=NGINX Do…   0B                  
+<missing>           5 weeks ago         /bin/sh -c #(nop)  CMD ["bash"]                 0B                  
+<missing>           5 weeks ago         /bin/sh -c #(nop) ADD file:f30a8b5b7cdc9ba33…   55.2MB              
+[usere@lx-12-5 linux_tweet_app]$ docker container run -d -p 8088:80 --name linux_tweet_app:v1
+"docker container run" requires at least 1 argument.
+See 'docker container run --help'.
+
+Usage:  docker container run [OPTIONS] IMAGE [COMMAND] [ARG...] [flags]
+
+Run a command in a new container
+[usere@lx-12-5 linux_tweet_app]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                   NAMES
+1dc72cdbedfd        nginx               "nginx -g 'daemon of…"   11 minutes ago      Up 11 minutes       0.0.0.0:32769->80/tcp   pedantic_bartik
+[usere@lx-12-5 linux_tweet_app]$ docker container run -d -p 8088:80 --name linux_tweet_app:v1 .
+docker: invalid reference format.
+See 'docker run --help'.
+[usere@lx-12-5 linux_tweet_app]$ docker container run -d -p 8088:80 --name linux_tweet_app:v1 .
+docker: invalid reference format.
+See 'docker run --help'.
+[usere@lx-12-5 linux_tweet_app]$ docker container run -d -p8088:80 --name linux_tweet_app:v1 .
+docker: invalid reference format.
+See 'docker run --help'.
+[usere@lx-12-5 linux_tweet_app]$ docker run -d -p 8088:80 --name linux_tweet_app:v1
+"docker run" requires at least 1 argument.
+See 'docker run --help'.
+
+Usage:  docker run [OPTIONS] IMAGE [COMMAND] [ARG...] [flags]
+
+Run a command in a new container
+[usere@lx-12-5 linux_tweet_app]$ docker run -d -p 8088:80 --name linux_tweet_app linux_tweet_app:v1
+1468842d660ee12ec7a74460135789196e01e4576a720fcd59503f4aca899428
+[usere@lx-12-5 linux_tweet_app]$ docker container stop $( docker container ls -q)
+1468842d660e
+1dc72cdbedfd
+[usere@lx-12-5 linux_tweet_app]$ docker run -d --mounttype=bind,source="$(pwd)",target=/usr/share/nginx/html  -p 8088:80 --name linux_tweet_app2 linux_tweet_app:v1
+unknown flag: --mounttype
+See 'docker run --help'.
+[usere@lx-12-5 linux_tweet_app]$ docker run -d --mount type=bind,source="$(pwd)",target=/usr/share/nginx/html  -p 8088:80 --name linux_tweet_app2 linux_tweet_app:v1
+8e680f38fef6d99047e6dab37c3308434b03237bdef0e7a9bbc07b461284e8c6
+[usere@lx-12-5 linux_tweet_app]$ docker container stop $( docker container ls -q)
+8e680f38fef6
+[usere@lx-12-5 linux_tweet_app]$ docker container rm 8e680f38fef6
+8e680f38fef6
+[usere@lx-12-5 linux_tweet_app]$ ls
+Dockerfile  index.html  index-new.html  index-original.html  linux.png  README.md
+[usere@lx-12-5 linux_tweet_app]$ docker run -d --mount type=bind,source="$(pwd)",target=/usr/share/nginx/html  -p 8088:80 --name linux_tweet_app2 linux_tweet_app:v1
+c667f7036b11976d046d9e17e6dcdab4205cb1c4e7cbc5958f7a214028cc0ee3
+[usere@lx-12-5 linux_tweet_app]$ docker image build -t linux_tweet_app:v2 -t linux_tweet_app:latest .
+Sending build context to Docker daemon    108kB
+Step 1/5 : FROM nginx:latest
+ ---> 3f8a4339aadd
+Step 2/5 : COPY index.html /usr/share/nginx/html
+ ---> 8a59c7885a43
+Step 3/5 : COPY linux.png /usr/share/nginx/html
+ ---> 5ade13ed9c98
+Step 4/5 : EXPOSE 80 443
+ ---> Running in 2ab789432b16
+Removing intermediate container 2ab789432b16
+ ---> df262808098e
+Step 5/5 : CMD ["nginx", "-g", "daemon off;"]
+ ---> Running in a2f1b528565f
+Removing intermediate container a2f1b528565f
+ ---> d83984b13ce0
+Successfully built d83984b13ce0
+Successfully tagged linux_tweet_app:v2
+Successfully tagged linux_tweet_app:latest
+[usere@lx-12-5 linux_tweet_app]$ docker login 
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username (jthorel): 
+Password: 
+Login Succeeded
+[usere@lx-12-5 linux_tweet_app]$ docker image tag linux_tweet_app:latest jthorel/linuxtweet
+[usere@lx-12-5 linux_tweet_app]$ docker image push  jthorel/linuxtweet
+The push refers to repository [docker.io/jthorel/linuxtweet]
+fd99ba47c571: Pushed 
+44706bab5f55: Pushed 
+a103d141fc98: Mounted from library/nginx 
+73e2bd445514: Mounted from library/nginx 
+2ec5c0a4cb57: Mounted from library/nginx 
+latest: digest: sha256:978f77220f8c6594fc2cfaf62641936144f69635b4e28ba4a73435263dff0e80 size: 1363
+[usere@lx-12-5 linux_tweet_app]$ docker image build -t linux_tweet_app:v2 -t jthorel/linuxtweet .
+Sending build context to Docker daemon    108kB
+Step 1/5 : FROM nginx:latest
+ ---> 3f8a4339aadd
+Step 2/5 : COPY index.html /usr/share/nginx/html
+ ---> Using cache
+ ---> 8a59c7885a43
+Step 3/5 : COPY linux.png /usr/share/nginx/html
+ ---> Using cache
+ ---> 5ade13ed9c98
+Step 4/5 : EXPOSE 80 443
+ ---> Using cache
+ ---> df262808098e
+Step 5/5 : CMD ["nginx", "-g", "daemon off;"]
+ ---> Using cache
+ ---> d83984b13ce0
+Successfully built d83984b13ce0
+Successfully tagged linux_tweet_app:v2
+Successfully tagged jthorel/linuxtweet:latest
+[usere@lx-12-5 linux_tweet_app]$ docker image pull jthorel/linuxtweet 
+Using default tag: latest
+latest: Pulling from jthorel/linuxtweet
+Digest: sha256:978f77220f8c6594fc2cfaf62641936144f69635b4e28ba4a73435263dff0e80
+Status: Image is up to date for jthorel/linuxtweet:latest
+[usere@lx-12-5 linux_tweet_app]$ cd ..
+[usere@lx-12-5 day2]$ mkdir python
+[usere@lx-12-5 day2]$ cd python
+[usere@lx-12-5 python]$ vim Dockerfile
+[usere@lx-12-5 python]$ cat Dockerfile 
+FROM python:2.7-slime
+WORKDIR /app
+ADD . /app
+RUN pip install -r  requirements.txt
+EXPOSE 80
+ENV NAME World 
+CMD ["python","app.py"]
+[usere@lx-12-5 python]$ vim requirements.txt
+[usere@lx-12-5 python]$ vim app.py
+[usere@lx-12-5 python]$ cat requirements.txt 
+flask
+redis
+[usere@lx-12-5 python]$ vim app.py
+[usere@lx-12-5 python]$ cat requirements.txt 
+flask
+redis
+[usere@lx-12-5 python]$ vim requirements.txt
+[usere@lx-12-5 python]$ vim requirements.txt
+[usere@lx-12-5 python]$ ls
+app.py  Dockerfile  requirements.txt
+[usere@lx-12-5 python]$ vi app.py 
+[usere@lx-12-5 python]$ docker image build -t pythonapp .
+Sending build context to Docker daemon  4.608kB
+Step 1/7 : FROM python:2.7-slime
+manifest for python:2.7-slime not found
+[usere@lx-12-5 python]$ vi Dockerfile 
+[usere@lx-12-5 python]$ docker image build -t pythonapp .
+Sending build context to Docker daemon  4.608kB
+Step 1/7 : FROM python:2.7-slim
+2.7-slim: Pulling from library/python
+c4bb02b17bb4: Pull complete 
+c5c896dce5ee: Pull complete 
+cf210b898cc6: Pull complete 
+5117cef49bdb: Pull complete 
+Digest: sha256:22112f2295fe9ea84b72e5344af73a2580a47b1014a1f4c58eccf6095b7ea18f
+Status: Downloaded newer image for python:2.7-slim
+ ---> 4fd30fc83117
+Step 2/7 : WORKDIR /app
+Removing intermediate container f74b9f856d2d
+ ---> 36476cf83100
+Step 3/7 : ADD . /app
+ ---> e0df88aa93cd
+Step 4/7 : RUN pip install -r  requirements.txt
+ ---> Running in cc4325035e13
+Collecting Flask (from -r requirements.txt (line 1))
+  Downloading Flask-0.12.2-py2.py3-none-any.whl (83kB)
+Collecting Redis (from -r requirements.txt (line 2))
+  Downloading redis-2.10.6-py2.py3-none-any.whl (64kB)
+Collecting itsdangerous>=0.21 (from Flask->-r requirements.txt (line 1))
+  Downloading itsdangerous-0.24.tar.gz (46kB)
+Collecting Jinja2>=2.4 (from Flask->-r requirements.txt (line 1))
+  Downloading Jinja2-2.10-py2.py3-none-any.whl (126kB)
+Collecting Werkzeug>=0.7 (from Flask->-r requirements.txt (line 1))
+  Downloading Werkzeug-0.14.1-py2.py3-none-any.whl (322kB)
+Collecting click>=2.0 (from Flask->-r requirements.txt (line 1))
+  Downloading click-6.7-py2.py3-none-any.whl (71kB)
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.4->Flask->-r requirements.txt (line 1))
+  Downloading MarkupSafe-1.0.tar.gz
+Building wheels for collected packages: itsdangerous, MarkupSafe
+  Running setup.py bdist_wheel for itsdangerous: started
+  Running setup.py bdist_wheel for itsdangerous: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/fc/a8/66/24d655233c757e178d45dea2de22a04c6d92766abfb741129a
+  Running setup.py bdist_wheel for MarkupSafe: started
+  Running setup.py bdist_wheel for MarkupSafe: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/88/a7/30/e39a54a87bcbe25308fa3ca64e8ddc75d9b3e5afa21ee32d57
+Successfully built itsdangerous MarkupSafe
+Installing collected packages: itsdangerous, MarkupSafe, Jinja2, Werkzeug, click, Flask, Redis
+Successfully installed Flask-0.12.2 Jinja2-2.10 MarkupSafe-1.0 Redis-2.10.6 Werkzeug-0.14.1 click-6.7 itsdangerous-0.24
+Removing intermediate container cc4325035e13
+ ---> 6b4d02275ac3
+Step 5/7 : EXPOSE 80
+ ---> Running in a4878aadb3ad
+Removing intermediate container a4878aadb3ad
+ ---> af28a3770268
+Step 6/7 : ENV NAME World
+ ---> Running in 4d9dce01c05e
+Removing intermediate container 4d9dce01c05e
+ ---> 1b4d2453e852
+Step 7/7 : CMD ["python","app.py"]
+ ---> Running in 279e0f675683
+Removing intermediate container 279e0f675683
+ ---> ec008c9ff390
+Successfully built ec008c9ff390
+Successfully tagged pythonapp:latest
+[usere@lx-12-5 python]$ docker run -d -P pythonapp
+93ab046cd27c856bae0354ddb19ba663e89cb0f56bb0953ce6ecdf361907cfff
+[usere@lx-12-5 python]$ docker container ls
+CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS              PORTS                           NAMES
+c667f7036b11        linux_tweet_app:v1   "nginx -g 'daemon of…"   2 hours ago         Up 2 hours          443/tcp, 0.0.0.0:8088->80/tcp   linux_tweet_app2
+[usere@lx-12-5 python]$ docker stop c667f7036b11
+c667f7036b11
+[usere@lx-12-5 python]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+[usere@lx-12-5 python]$ docker container logs 93ab046cd27c856bae0
+  File "app.py", line 1
+    from flask import Flaskfrom redis import Redis, RedisErrorimport osimport socket
+                                    ^
+SyntaxError: invalid syntax
+[usere@lx-12-5 python]$ vi app.py 
+[usere@lx-12-5 python]$ docker run -d -P pythonapp
+ee9ef985c0f631d6117c1c13f98e072b3d8e058f5383c8b4f01f8892a1ce0349
+[usere@lx-12-5 python]$ docker container logs ee9ef985c0f631d6117c1
+  File "app.py", line 1
+    from flask import Flaskfrom redis import Redis, RedisErrorimport osimport socket
+                                    ^
+SyntaxError: invalid syntax
+[usere@lx-12-5 python]$ docker image build -t pythonapp .
+Sending build context to Docker daemon  4.608kB
+Step 1/7 : FROM python:2.7-slim
+ ---> 4fd30fc83117
+Step 2/7 : WORKDIR /app
+ ---> Using cache
+ ---> 36476cf83100
+Step 3/7 : ADD . /app
+ ---> 2a28ed5cb55c
+Step 4/7 : RUN pip install -r  requirements.txt
+ ---> Running in 7d0cde441c26
+Collecting Flask (from -r requirements.txt (line 1))
+  Downloading Flask-0.12.2-py2.py3-none-any.whl (83kB)
+Collecting Redis (from -r requirements.txt (line 2))
+  Downloading redis-2.10.6-py2.py3-none-any.whl (64kB)
+Collecting itsdangerous>=0.21 (from Flask->-r requirements.txt (line 1))
+  Downloading itsdangerous-0.24.tar.gz (46kB)
+Collecting Jinja2>=2.4 (from Flask->-r requirements.txt (line 1))
+  Downloading Jinja2-2.10-py2.py3-none-any.whl (126kB)
+Collecting Werkzeug>=0.7 (from Flask->-r requirements.txt (line 1))
+  Downloading Werkzeug-0.14.1-py2.py3-none-any.whl (322kB)
+Collecting click>=2.0 (from Flask->-r requirements.txt (line 1))
+  Downloading click-6.7-py2.py3-none-any.whl (71kB)
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.4->Flask->-r requirements.txt (line 1))
+  Downloading MarkupSafe-1.0.tar.gz
+Building wheels for collected packages: itsdangerous, MarkupSafe
+  Running setup.py bdist_wheel for itsdangerous: started
+  Running setup.py bdist_wheel for itsdangerous: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/fc/a8/66/24d655233c757e178d45dea2de22a04c6d92766abfb741129a
+  Running setup.py bdist_wheel for MarkupSafe: started
+  Running setup.py bdist_wheel for MarkupSafe: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/88/a7/30/e39a54a87bcbe25308fa3ca64e8ddc75d9b3e5afa21ee32d57
+Successfully built itsdangerous MarkupSafe
+Installing collected packages: itsdangerous, MarkupSafe, Jinja2, Werkzeug, click, Flask, Redis
+Successfully installed Flask-0.12.2 Jinja2-2.10 MarkupSafe-1.0 Redis-2.10.6 Werkzeug-0.14.1 click-6.7 itsdangerous-0.24
+Removing intermediate container 7d0cde441c26
+ ---> bfef6cf921fc
+Step 5/7 : EXPOSE 80
+ ---> Running in 5d2b55560f2c
+Removing intermediate container 5d2b55560f2c
+ ---> 9c9c453c6133
+Step 6/7 : ENV NAME World
+ ---> Running in 55b7c5ccdfd0
+Removing intermediate container 55b7c5ccdfd0
+ ---> 4102bb5b39c5
+Step 7/7 : CMD ["python","app.py"]
+ ---> Running in 31594d68b100
+Removing intermediate container 31594d68b100
+ ---> cbf757c1ea33
+Successfully built cbf757c1ea33
+Successfully tagged pythonapp:latest
+[usere@lx-12-5 python]$ docker run -d -P pythonapp
+745885f938dd7f715d9dcbbf3a37e97dad0c27beee2281db8915c300cd85a73b
+[usere@lx-12-5 python]$ docker container logs 745885f938dd7f715d9d
+  File "app.py", line 10
+    @app.route("/")def hello():
+                     ^
+SyntaxError: invalid syntax
+[usere@lx-12-5 python]$ vi app.py 
+[usere@lx-12-5 python]$ docker image build -t pythonapp .
+Sending build context to Docker daemon  4.608kB
+Step 1/7 : FROM python:2.7-slim
+ ---> 4fd30fc83117
+Step 2/7 : WORKDIR /app
+ ---> Using cache
+ ---> 36476cf83100
+Step 3/7 : ADD . /app
+ ---> f6bc134801f5
+Step 4/7 : RUN pip install -r  requirements.txt
+ ---> Running in 9792acb0c981
+Collecting Flask (from -r requirements.txt (line 1))
+  Downloading Flask-0.12.2-py2.py3-none-any.whl (83kB)
+Collecting Redis (from -r requirements.txt (line 2))
+  Downloading redis-2.10.6-py2.py3-none-any.whl (64kB)
+Collecting itsdangerous>=0.21 (from Flask->-r requirements.txt (line 1))
+  Downloading itsdangerous-0.24.tar.gz (46kB)
+Collecting Jinja2>=2.4 (from Flask->-r requirements.txt (line 1))
+  Downloading Jinja2-2.10-py2.py3-none-any.whl (126kB)
+Collecting Werkzeug>=0.7 (from Flask->-r requirements.txt (line 1))
+  Downloading Werkzeug-0.14.1-py2.py3-none-any.whl (322kB)
+Collecting click>=2.0 (from Flask->-r requirements.txt (line 1))
+  Downloading click-6.7-py2.py3-none-any.whl (71kB)
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.4->Flask->-r requirements.txt (line 1))
+  Downloading MarkupSafe-1.0.tar.gz
+Building wheels for collected packages: itsdangerous, MarkupSafe
+  Running setup.py bdist_wheel for itsdangerous: started
+  Running setup.py bdist_wheel for itsdangerous: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/fc/a8/66/24d655233c757e178d45dea2de22a04c6d92766abfb741129a
+  Running setup.py bdist_wheel for MarkupSafe: started
+  Running setup.py bdist_wheel for MarkupSafe: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/88/a7/30/e39a54a87bcbe25308fa3ca64e8ddc75d9b3e5afa21ee32d57
+Successfully built itsdangerous MarkupSafe
+Installing collected packages: itsdangerous, MarkupSafe, Jinja2, Werkzeug, click, Flask, Redis
+Successfully installed Flask-0.12.2 Jinja2-2.10 MarkupSafe-1.0 Redis-2.10.6 Werkzeug-0.14.1 click-6.7 itsdangerous-0.24
+Removing intermediate container 9792acb0c981
+ ---> b77d360784ad
+Step 5/7 : EXPOSE 80
+ ---> Running in 4dbb6fad5607
+Removing intermediate container 4dbb6fad5607
+ ---> 41fa6162c6b6
+Step 6/7 : ENV NAME World
+ ---> Running in f0b9bfd0da4b
+Removing intermediate container f0b9bfd0da4b
+ ---> d73d3d54a3b0
+Step 7/7 : CMD ["python","app.py"]
+ ---> Running in 9d5239639672
+Removing intermediate container 9d5239639672
+ ---> 75cdc26e7a38
+Successfully built 75cdc26e7a38
+Successfully tagged pythonapp:latest
+[usere@lx-12-5 python]$ docker run -d -P pythonapp
+263fae509a77a9ffde6eacee0083a51ea0a187510d51e1e16b83f205f56dbda9
+[usere@lx-12-5 python]$ docker container logs 263fae509a77a9ffde
+  File "app.py", line 24
+    app.run(host='0.0.0.0', port=80)
+      ^
+IndentationError: expected an indented block
+[usere@lx-12-5 python]$ vi app.py 
+[usere@lx-12-5 python]$ docker image build -t pythonapp .
+Sending build context to Docker daemon  4.608kB
+Step 1/7 : FROM python:2.7-slim
+ ---> 4fd30fc83117
+Step 2/7 : WORKDIR /app
+ ---> Using cache
+ ---> 36476cf83100
+Step 3/7 : ADD . /app
+ ---> fa5a3cddb93d
+Step 4/7 : RUN pip install -r  requirements.txt
+ ---> Running in 72b40efff30d
+Collecting Flask (from -r requirements.txt (line 1))
+  Downloading Flask-0.12.2-py2.py3-none-any.whl (83kB)
+Collecting Redis (from -r requirements.txt (line 2))
+  Downloading redis-2.10.6-py2.py3-none-any.whl (64kB)
+Collecting itsdangerous>=0.21 (from Flask->-r requirements.txt (line 1))
+  Downloading itsdangerous-0.24.tar.gz (46kB)
+Collecting Jinja2>=2.4 (from Flask->-r requirements.txt (line 1))
+  Downloading Jinja2-2.10-py2.py3-none-any.whl (126kB)
+Collecting Werkzeug>=0.7 (from Flask->-r requirements.txt (line 1))
+  Downloading Werkzeug-0.14.1-py2.py3-none-any.whl (322kB)
+Collecting click>=2.0 (from Flask->-r requirements.txt (line 1))
+  Downloading click-6.7-py2.py3-none-any.whl (71kB)
+Collecting MarkupSafe>=0.23 (from Jinja2>=2.4->Flask->-r requirements.txt (line 1))
+  Downloading MarkupSafe-1.0.tar.gz
+Building wheels for collected packages: itsdangerous, MarkupSafe
+  Running setup.py bdist_wheel for itsdangerous: started
+  Running setup.py bdist_wheel for itsdangerous: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/fc/a8/66/24d655233c757e178d45dea2de22a04c6d92766abfb741129a
+  Running setup.py bdist_wheel for MarkupSafe: started
+  Running setup.py bdist_wheel for MarkupSafe: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/88/a7/30/e39a54a87bcbe25308fa3ca64e8ddc75d9b3e5afa21ee32d57
+Successfully built itsdangerous MarkupSafe
+Installing collected packages: itsdangerous, MarkupSafe, Jinja2, Werkzeug, click, Flask, Redis
+Successfully installed Flask-0.12.2 Jinja2-2.10 MarkupSafe-1.0 Redis-2.10.6 Werkzeug-0.14.1 click-6.7 itsdangerous-0.24
+Removing intermediate container 72b40efff30d
+ ---> 4c023c41a363
+Step 5/7 : EXPOSE 80
+ ---> Running in 3dd8af53b6b1
+Removing intermediate container 3dd8af53b6b1
+ ---> fa69afb972ad
+Step 6/7 : ENV NAME World
+ ---> Running in df232f6f087c
+Removing intermediate container df232f6f087c
+ ---> 0c6ca9a1f147
+Step 7/7 : CMD ["python","app.py"]
+ ---> Running in a04139e2c4a8
+Removing intermediate container a04139e2c4a8
+ ---> e6bd451979de
+Successfully built e6bd451979de
+Successfully tagged pythonapp:latest
+[usere@lx-12-5 python]$ docker run -d -P pythonapp
+33f9ac74e0d1c520bdd88f6d58eed0b493db708195c43c472714c34f6f9b743a
+[usere@lx-12-5 python]$ docker container logs 33f9ac74e0d1c520b
+ * Running on http://0.0.0.0:80/ (Press CTRL+C to quit)
+[usere@lx-12-5 python]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED              STATUS              PORTS                   NAMES
+33f9ac74e0d1        pythonapp           "python app.py"     About a minute ago   Up 59 seconds       0.0.0.0:32774->80/tcp   condescending_jang
+[usere@lx-12-5 python]$ docker container port 33f9ac74e0d1
+80/tcp -> 0.0.0.0:32774
+[usere@lx-12-5 python]$ docker container ls -al
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                   NAMES
+33f9ac74e0d1        pythonapp           "python app.py"     5 minutes ago       Up 5 minutes        0.0.0.0:32774->80/tcp   condescending_jang
+[usere@lx-12-5 python]$ docker container ls -a
+CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS                      PORTS                   NAMES
+33f9ac74e0d1        pythonapp            "python app.py"          5 minutes ago       Up 5 minutes                0.0.0.0:32774->80/tcp   condescending_jang
+263fae509a77        75cdc26e7a38         "python app.py"          8 minutes ago       Exited (1) 8 minutes ago                            jovial_sammet
+745885f938dd        cbf757c1ea33         "python app.py"          11 minutes ago      Exited (1) 11 minutes ago                           dazzling_kalam
+ee9ef985c0f6        ec008c9ff390         "python app.py"          12 minutes ago      Exited (1) 12 minutes ago                           admiring_payne
+93ab046cd27c        ec008c9ff390         "python app.py"          16 minutes ago      Exited (1) 16 minutes ago                           cocky_einstein
+c667f7036b11        linux_tweet_app:v1   "nginx -g 'daemon of…"   3 hours ago         Exited (0) 16 minutes ago                           linux_tweet_app2
+1468842d660e        linux_tweet_app:v1   "nginx -g 'daemon of…"   3 hours ago         Exited (0) 3 hours ago                              linux_tweet_app
+1dc72cdbedfd        nginx                "nginx -g 'daemon of…"   3 hours ago         Exited (0) 3 hours ago                              pedantic_bartik
+fd8378f96654        mysql                "docker-entrypoint.s…"   4 hours ago         Exited (0) 3 hours ago                              mydb
+505386514dd1        jpetazzo/clock       "/bin/sh -c 'while d…"   4 hours ago         Exited (137) 3 hours ago                            stupefied_bardeen
+181b4c0525c6        jpetazzo/clock       "/bin/sh -c 'while d…"   4 hours ago         Exited (0) 4 hours ago                              gracious_roentgen
+19bf0a13ef81        nginx:alpine         "nginx -g 'daemon of…"   5 hours ago         Exited (0) 3 hours ago                              web
+344612e27f50        alpine               "/bin/sh"                5 hours ago         Exited (137) 4 hours ago                            romantic_archimedes
+74d432de7d2d        jthorel/hello        "/hello"                 5 hours ago         Exited (0) 5 hours ago                              quirky_chatterjee
+aedb7c3c63c4        sjourdan/strace      "strace -f -p 1"         22 hours ago        Exited (0) 22 hours ago                             amazing_lovelace
+bb1e037c1750        alpine               "sh"                     22 hours ago        Exited (1) 22 hours ago                             hungry_jones
+99b9d1e657dc        alpine               "sh"                     22 hours ago        Created                                             hungry_feynman
+ca9ec64f7e4f        alpine               "chown nobody /"         23 hours ago        Exited (1) 23 hours ago                             zealous_albattani
+9c54ec8245e8        alpine               "chown nobody /"         23 hours ago        Exited (1) 23 hours ago                             practical_dubinsky
+af21823c63fa        alpine               "chown nobody /"         23 hours ago        Exited (1) 23 hours ago                             inspiring_swirles
+e0d3cfdcb0b5        alpine               "chown nobody /"         23 hours ago        Exited (0) 23 hours ago                             relaxed_pare
+cb2ae2235a3f        alpine               "chown nobody /"         23 hours ago        Exited (0) 23 hours ago                             gifted_meitner
+a2d2d902547a        ubuntu               "/bin/bash"              23 hours ago        Exited (0) 23 hours ago                             hungry_joliot
+f917c96a95ad        ubuntu               "/bin/bash"              24 hours ago        Exited (0) 24 hours ago                             adoring_saha
+[usere@lx-12-5 python]$ cd ..
+[usere@lx-12-5 day2]$ mkdir entrypoint
+[usere@lx-12-5 day2]$ vim Dockerfile
+[usere@lx-12-5 day2]$ docker image build -t helloubuntu
+"docker image build" requires exactly 1 argument.
+See 'docker image build --help'.
+
+Usage:  docker image build [OPTIONS] PATH | URL | - [flags]
+
+Build an image from a Dockerfile
+[usere@lx-12-5 day2]$ docker image build -t helloubuntu .
+Sending build context to Docker daemon    214kB
+Step 1/2 : FROM ubuntu
+ ---> 00fd29ccc6f1
+Step 2/2 : CMD echo "Hello world"
+ ---> Running in 6817108ec719
+Removing intermediate container 6817108ec719
+ ---> 7570fe7e5079
+Successfully built 7570fe7e5079
+Successfully tagged helloubuntu:latest
+[usere@lx-12-5 day2]$ docker run helloubuntu
+Hello world
+[usere@lx-12-5 day2]$ vim Dockerfile 
+[usere@lx-12-5 day2]$ docker image build -t helloubuntu .
+Sending build context to Docker daemon    214kB
+Step 1/3 : FROM ubuntu
+ ---> 00fd29ccc6f1
+Step 2/3 : ENTRYPOINT ["/bin/echo", "hello"]
+ ---> Running in 4b7344eaf73a
+Removing intermediate container 4b7344eaf73a
+ ---> 7e1c21997401
+Step 3/3 : CMD echo " world"
+ ---> Running in 4ad5b04f414e
+Removing intermediate container 4ad5b04f414e
+ ---> 90d1ebb15912
+Successfully built 90d1ebb15912
+Successfully tagged helloubuntu:latest
+[usere@lx-12-5 day2]$ docker run helloubuntu
+hello /bin/sh -c echo " world"
+[usere@lx-12-5 day2]$ vim Dockerfile 
+[usere@lx-12-5 day2]$ docker image build -t helloubuntu .
+Sending build context to Docker daemon    214kB
+Step 1/3 : FROM ubuntu
+ ---> 00fd29ccc6f1
+Step 2/3 : ENTRYPOINT ["/bin/echo", "hello"]
+ ---> Using cache
+ ---> 7e1c21997401
+Step 3/3 : CMD ["world"]
+ ---> Running in 3a3ba7f83f58
+Removing intermediate container 3a3ba7f83f58
+ ---> f6555bfa9a6c
+Successfully built f6555bfa9a6c
+Successfully tagged helloubuntu:latest
+[usere@lx-12-5 day2]$ docker run helloubuntu
+hello world
+[usere@lx-12-5 day2]$ docker run helloubuntu toto
+hello toto
+[usere@lx-12-5 day2]$ mkdir multi
+[usere@lx-12-5 day2]$ cd multi
+[usere@lx-12-5 multi]$ vim hello.c
+[usere@lx-12-5 multi]$ vim Dockerfile
+[usere@lx-12-5 multi]$ vim hello.c
+[usere@lx-12-5 multi]$ vim Dockerfile
+[usere@lx-12-5 multi]$ docker image build -t testc
+"docker image build" requires exactly 1 argument.
+See 'docker image build --help'.
+
+Usage:  docker image build [OPTIONS] PATH | URL | - [flags]
+
+Build an image from a Dockerfile
+[usere@lx-12-5 multi]$ docker image build -t testc .
+Sending build context to Docker daemon  3.072kB
+Step 1/8 : FROM ubuntu AS compiler
+ ---> 00fd29ccc6f1
+Step 2/8 : RUN apt-get update
+ ---> Running in 14010e851068
+Get:1 http://archive.ubuntu.com/ubuntu xenial InRelease [247 kB]
+Get:2 http://security.ubuntu.com/ubuntu xenial-security InRelease [102 kB]
+Get:3 http://archive.ubuntu.com/ubuntu xenial-updates InRelease [102 kB]
+Get:4 http://archive.ubuntu.com/ubuntu xenial-backports InRelease [102 kB]
+Get:5 http://archive.ubuntu.com/ubuntu xenial/universe Sources [9802 kB]
+Get:6 http://security.ubuntu.com/ubuntu xenial-security/universe Sources [56.8 kB]
+Get:7 http://security.ubuntu.com/ubuntu xenial-security/main amd64 Packages [539 kB]
+Get:8 http://security.ubuntu.com/ubuntu xenial-security/restricted amd64 Packages [12.7 kB]
+Get:9 http://security.ubuntu.com/ubuntu xenial-security/universe amd64 Packages [245 kB]
+Get:10 http://security.ubuntu.com/ubuntu xenial-security/multiverse amd64 Packages [3492 B]
+Get:11 http://archive.ubuntu.com/ubuntu xenial/main amd64 Packages [1558 kB]
+Get:12 http://archive.ubuntu.com/ubuntu xenial/restricted amd64 Packages [14.1 kB]
+Get:13 http://archive.ubuntu.com/ubuntu xenial/universe amd64 Packages [9827 kB]
+Get:14 http://archive.ubuntu.com/ubuntu xenial/multiverse amd64 Packages [176 kB]
+Get:15 http://archive.ubuntu.com/ubuntu xenial-updates/universe Sources [234 kB]
+Get:16 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 Packages [903 kB]
+Get:17 http://archive.ubuntu.com/ubuntu xenial-updates/restricted amd64 Packages [13.1 kB]
+Get:18 http://archive.ubuntu.com/ubuntu xenial-updates/universe amd64 Packages [735 kB]
+Get:19 http://archive.ubuntu.com/ubuntu xenial-updates/multiverse amd64 Packages [18.5 kB]
+Get:20 http://archive.ubuntu.com/ubuntu xenial-backports/main amd64 Packages [5162 B]
+Get:21 http://archive.ubuntu.com/ubuntu xenial-backports/universe amd64 Packages [7146 B]
+Fetched 24.7 MB in 57s (433 kB/s)
+Reading package lists...
+Removing intermediate container 14010e851068
+ ---> bb829ea03c0b
+Step 3/8 : RUN apt-get install -y build-essential
+ ---> Running in a94596443a49
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  binutils bzip2 cpp cpp-5 dpkg-dev fakeroot g++ g++-5 gcc gcc-5 ifupdown
+  iproute2 isc-dhcp-client isc-dhcp-common libalgorithm-diff-perl
+  libalgorithm-diff-xs-perl libalgorithm-merge-perl libasan2 libatm1
+  libatomic1 libc-dev-bin libc6-dev libcc1-0 libcilkrts5 libdns-export162
+  libdpkg-perl libfakeroot libfile-fcntllock-perl libgcc-5-dev libgdbm3
+  libgmp10 libgomp1 libisc-export160 libisl15 libitm1 liblsan0 libmnl0 libmpc3
+  libmpfr4 libmpx0 libperl5.22 libquadmath0 libstdc++-5-dev libtsan0 libubsan0
+  libxtables11 linux-libc-dev make manpages manpages-dev netbase patch perl
+  perl-modules-5.22 rename xz-utils
+Suggested packages:
+  binutils-doc bzip2-doc cpp-doc gcc-5-locales debian-keyring g++-multilib
+  g++-5-multilib gcc-5-doc libstdc++6-5-dbg gcc-multilib autoconf automake
+  libtool flex bison gdb gcc-doc gcc-5-multilib libgcc1-dbg libgomp1-dbg
+  libitm1-dbg libatomic1-dbg libasan2-dbg liblsan0-dbg libtsan0-dbg
+  libubsan0-dbg libcilkrts5-dbg libmpx0-dbg libquadmath0-dbg ppp rdnssd
+  iproute2-doc resolvconf avahi-autoipd isc-dhcp-client-ddns apparmor
+  glibc-doc libstdc++-5-doc make-doc man-browser ed diffutils-doc perl-doc
+  libterm-readline-gnu-perl | libterm-readline-perl-perl
+The following NEW packages will be installed:
+  binutils build-essential bzip2 cpp cpp-5 dpkg-dev fakeroot g++ g++-5 gcc
+  gcc-5 ifupdown iproute2 isc-dhcp-client isc-dhcp-common
+  libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl
+  libasan2 libatm1 libatomic1 libc-dev-bin libc6-dev libcc1-0 libcilkrts5
+  libdns-export162 libdpkg-perl libfakeroot libfile-fcntllock-perl
+  libgcc-5-dev libgdbm3 libgmp10 libgomp1 libisc-export160 libisl15 libitm1
+  liblsan0 libmnl0 libmpc3 libmpfr4 libmpx0 libperl5.22 libquadmath0
+  libstdc++-5-dev libtsan0 libubsan0 libxtables11 linux-libc-dev make manpages
+  manpages-dev netbase patch perl perl-modules-5.22 rename xz-utils
+0 upgraded, 57 newly installed, 0 to remove and 1 not upgraded.
+Need to get 48.4 MB of archives.
+After this operation, 192 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu xenial/main amd64 libatm1 amd64 1:2.5.1-1.5 [24.2 kB]
+Get:2 http://archive.ubuntu.com/ubuntu xenial/main amd64 libmnl0 amd64 1.0.3-5 [12.0 kB]
+Get:3 http://archive.ubuntu.com/ubuntu xenial/main amd64 libgdbm3 amd64 1.8.3-13.1 [16.9 kB]
+Get:4 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 perl-modules-5.22 all 5.22.1-9ubuntu0.2 [2661 kB]
+Get:5 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libperl5.22 amd64 5.22.1-9ubuntu0.2 [3391 kB]
+Get:6 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 perl amd64 5.22.1-9ubuntu0.2 [237 kB]
+Get:7 http://archive.ubuntu.com/ubuntu xenial/main amd64 libgmp10 amd64 2:6.1.0+dfsg-2 [240 kB]
+Get:8 http://archive.ubuntu.com/ubuntu xenial/main amd64 libmpfr4 amd64 3.1.4-1 [191 kB]
+Get:9 http://archive.ubuntu.com/ubuntu xenial/main amd64 libmpc3 amd64 1.0.3-1 [39.7 kB]
+Get:10 http://archive.ubuntu.com/ubuntu xenial/main amd64 bzip2 amd64 1.0.6-8 [32.7 kB]
+Get:11 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 iproute2 amd64 4.3.0-1ubuntu3.16.04.2 [522 kB]
+Get:12 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 ifupdown amd64 0.8.10ubuntu1.2 [54.9 kB]
+Get:13 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libisc-export160 amd64 1:9.10.3.dfsg.P4-8ubuntu1.9 [153 kB]
+Get:14 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libdns-export162 amd64 1:9.10.3.dfsg.P4-8ubuntu1.9 [666 kB]
+Get:15 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 isc-dhcp-client amd64 4.3.3-5ubuntu12.7 [223 kB]
+Get:16 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 isc-dhcp-common amd64 4.3.3-5ubuntu12.7 [105 kB]
+Get:17 http://archive.ubuntu.com/ubuntu xenial/main amd64 libxtables11 amd64 1.6.0-2ubuntu3 [27.2 kB]
+Get:18 http://archive.ubuntu.com/ubuntu xenial/main amd64 netbase all 5.3 [12.9 kB]
+Get:19 http://archive.ubuntu.com/ubuntu xenial/main amd64 manpages all 4.04-2 [1087 kB]
+Get:20 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 binutils amd64 2.26.1-1ubuntu1~16.04.5 [2311 kB]
+Get:21 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libc-dev-bin amd64 2.23-0ubuntu9 [68.6 kB]
+Get:22 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 linux-libc-dev amd64 4.4.0-109.132 [829 kB]
+Get:23 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libc6-dev amd64 2.23-0ubuntu9 [2082 kB]
+Get:24 http://archive.ubuntu.com/ubuntu xenial/main amd64 libisl15 amd64 0.16.1-1 [524 kB]
+Get:25 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 cpp-5 amd64 5.4.0-6ubuntu1~16.04.5 [7786 kB]
+Get:26 http://archive.ubuntu.com/ubuntu xenial/main amd64 cpp amd64 4:5.3.1-1ubuntu1 [27.7 kB]
+Get:27 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libcc1-0 amd64 5.4.0-6ubuntu1~16.04.5 [38.8 kB]
+Get:28 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libgomp1 amd64 5.4.0-6ubuntu1~16.04.5 [55.1 kB]
+Get:29 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libitm1 amd64 5.4.0-6ubuntu1~16.04.5 [27.4 kB]
+Get:30 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libatomic1 amd64 5.4.0-6ubuntu1~16.04.5 [8920 B]
+Get:31 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libasan2 amd64 5.4.0-6ubuntu1~16.04.5 [264 kB]
+Get:32 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 liblsan0 amd64 5.4.0-6ubuntu1~16.04.5 [105 kB]
+Get:33 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libtsan0 amd64 5.4.0-6ubuntu1~16.04.5 [244 kB]
+Get:34 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libubsan0 amd64 5.4.0-6ubuntu1~16.04.5 [95.3 kB]
+Get:35 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libcilkrts5 amd64 5.4.0-6ubuntu1~16.04.5 [40.1 kB]
+Get:36 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libmpx0 amd64 5.4.0-6ubuntu1~16.04.5 [9786 B]
+Get:37 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libquadmath0 amd64 5.4.0-6ubuntu1~16.04.5 [131 kB]
+Get:38 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libgcc-5-dev amd64 5.4.0-6ubuntu1~16.04.5 [2226 kB]
+Get:39 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 gcc-5 amd64 5.4.0-6ubuntu1~16.04.5 [8638 kB]
+Get:40 http://archive.ubuntu.com/ubuntu xenial/main amd64 gcc amd64 4:5.3.1-1ubuntu1 [5244 B]
+Get:41 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libstdc++-5-dev amd64 5.4.0-6ubuntu1~16.04.5 [1430 kB]
+Get:42 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 g++-5 amd64 5.4.0-6ubuntu1~16.04.5 [8435 kB]
+Get:43 http://archive.ubuntu.com/ubuntu xenial/main amd64 g++ amd64 4:5.3.1-1ubuntu1 [1504 B]
+Get:44 http://archive.ubuntu.com/ubuntu xenial/main amd64 make amd64 4.1-6 [151 kB]
+Get:45 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libdpkg-perl all 1.18.4ubuntu1.3 [195 kB]
+Get:46 http://archive.ubuntu.com/ubuntu xenial/main amd64 xz-utils amd64 5.1.1alpha+20120614-2ubuntu2 [78.8 kB]
+Get:47 http://archive.ubuntu.com/ubuntu xenial/main amd64 patch amd64 2.7.5-1 [90.4 kB]
+Get:48 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 dpkg-dev all 1.18.4ubuntu1.3 [584 kB]
+Get:49 http://archive.ubuntu.com/ubuntu xenial/main amd64 build-essential amd64 12.1ubuntu2 [4758 B]
+Get:50 http://archive.ubuntu.com/ubuntu xenial/main amd64 libfakeroot amd64 1.20.2-1ubuntu1 [25.5 kB]
+Get:51 http://archive.ubuntu.com/ubuntu xenial/main amd64 fakeroot amd64 1.20.2-1ubuntu1 [61.8 kB]
+Get:52 http://archive.ubuntu.com/ubuntu xenial/main amd64 libalgorithm-diff-perl all 1.19.03-1 [47.6 kB]
+Get:53 http://archive.ubuntu.com/ubuntu xenial/main amd64 libalgorithm-diff-xs-perl amd64 0.04-4build1 [11.0 kB]
+Get:54 http://archive.ubuntu.com/ubuntu xenial/main amd64 libalgorithm-merge-perl all 0.08-3 [12.0 kB]
+Get:55 http://archive.ubuntu.com/ubuntu xenial/main amd64 libfile-fcntllock-perl amd64 0.22-3 [32.0 kB]
+Get:56 http://archive.ubuntu.com/ubuntu xenial/main amd64 manpages-dev all 4.04-2 [2048 kB]
+Get:57 http://archive.ubuntu.com/ubuntu xenial/main amd64 rename all 0.20-4 [12.0 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 48.4 MB in 2min 40s (301 kB/s)
+Selecting previously unselected package libatm1:amd64.
+(Reading database ... 4768 files and directories currently installed.)
+Preparing to unpack .../libatm1_1%3a2.5.1-1.5_amd64.deb ...
+Unpacking libatm1:amd64 (1:2.5.1-1.5) ...
+Selecting previously unselected package libmnl0:amd64.
+Preparing to unpack .../libmnl0_1.0.3-5_amd64.deb ...
+Unpacking libmnl0:amd64 (1.0.3-5) ...
+Selecting previously unselected package libgdbm3:amd64.
+Preparing to unpack .../libgdbm3_1.8.3-13.1_amd64.deb ...
+Unpacking libgdbm3:amd64 (1.8.3-13.1) ...
+Selecting previously unselected package perl-modules-5.22.
+Preparing to unpack .../perl-modules-5.22_5.22.1-9ubuntu0.2_all.deb ...
+Unpacking perl-modules-5.22 (5.22.1-9ubuntu0.2) ...
+Selecting previously unselected package libperl5.22:amd64.
+Preparing to unpack .../libperl5.22_5.22.1-9ubuntu0.2_amd64.deb ...
+Unpacking libperl5.22:amd64 (5.22.1-9ubuntu0.2) ...
+Selecting previously unselected package perl.
+Preparing to unpack .../perl_5.22.1-9ubuntu0.2_amd64.deb ...
+Unpacking perl (5.22.1-9ubuntu0.2) ...
+Selecting previously unselected package libgmp10:amd64.
+Preparing to unpack .../libgmp10_2%3a6.1.0+dfsg-2_amd64.deb ...
+Unpacking libgmp10:amd64 (2:6.1.0+dfsg-2) ...
+Selecting previously unselected package libmpfr4:amd64.
+Preparing to unpack .../libmpfr4_3.1.4-1_amd64.deb ...
+Unpacking libmpfr4:amd64 (3.1.4-1) ...
+Selecting previously unselected package libmpc3:amd64.
+Preparing to unpack .../libmpc3_1.0.3-1_amd64.deb ...
+Unpacking libmpc3:amd64 (1.0.3-1) ...
+Selecting previously unselected package bzip2.
+Preparing to unpack .../bzip2_1.0.6-8_amd64.deb ...
+Unpacking bzip2 (1.0.6-8) ...
+Selecting previously unselected package iproute2.
+Preparing to unpack .../iproute2_4.3.0-1ubuntu3.16.04.2_amd64.deb ...
+Unpacking iproute2 (4.3.0-1ubuntu3.16.04.2) ...
+Selecting previously unselected package ifupdown.
+Preparing to unpack .../ifupdown_0.8.10ubuntu1.2_amd64.deb ...
+Unpacking ifupdown (0.8.10ubuntu1.2) ...
+Selecting previously unselected package libisc-export160.
+Preparing to unpack .../libisc-export160_1%3a9.10.3.dfsg.P4-8ubuntu1.9_amd64.deb ...
+Unpacking libisc-export160 (1:9.10.3.dfsg.P4-8ubuntu1.9) ...
+Selecting previously unselected package libdns-export162.
+Preparing to unpack .../libdns-export162_1%3a9.10.3.dfsg.P4-8ubuntu1.9_amd64.deb ...
+Unpacking libdns-export162 (1:9.10.3.dfsg.P4-8ubuntu1.9) ...
+Selecting previously unselected package isc-dhcp-client.
+Preparing to unpack .../isc-dhcp-client_4.3.3-5ubuntu12.7_amd64.deb ...
+Unpacking isc-dhcp-client (4.3.3-5ubuntu12.7) ...
+Selecting previously unselected package isc-dhcp-common.
+Preparing to unpack .../isc-dhcp-common_4.3.3-5ubuntu12.7_amd64.deb ...
+Unpacking isc-dhcp-common (4.3.3-5ubuntu12.7) ...
+Selecting previously unselected package libxtables11:amd64.
+Preparing to unpack .../libxtables11_1.6.0-2ubuntu3_amd64.deb ...
+Unpacking libxtables11:amd64 (1.6.0-2ubuntu3) ...
+Selecting previously unselected package netbase.
+Preparing to unpack .../archives/netbase_5.3_all.deb ...
+Unpacking netbase (5.3) ...
+Selecting previously unselected package manpages.
+Preparing to unpack .../manpages_4.04-2_all.deb ...
+Unpacking manpages (4.04-2) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../binutils_2.26.1-1ubuntu1~16.04.5_amd64.deb ...
+Unpacking binutils (2.26.1-1ubuntu1~16.04.5) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../libc-dev-bin_2.23-0ubuntu9_amd64.deb ...
+Unpacking libc-dev-bin (2.23-0ubuntu9) ...
+Selecting previously unselected package linux-libc-dev:amd64.
+Preparing to unpack .../linux-libc-dev_4.4.0-109.132_amd64.deb ...
+Unpacking linux-libc-dev:amd64 (4.4.0-109.132) ...
+Selecting previously unselected package libc6-dev:amd64.
+Preparing to unpack .../libc6-dev_2.23-0ubuntu9_amd64.deb ...
+Unpacking libc6-dev:amd64 (2.23-0ubuntu9) ...
+Selecting previously unselected package libisl15:amd64.
+Preparing to unpack .../libisl15_0.16.1-1_amd64.deb ...
+Unpacking libisl15:amd64 (0.16.1-1) ...
+Selecting previously unselected package cpp-5.
+Preparing to unpack .../cpp-5_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking cpp-5 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../cpp_4%3a5.3.1-1ubuntu1_amd64.deb ...
+Unpacking cpp (4:5.3.1-1ubuntu1) ...
+Selecting previously unselected package libcc1-0:amd64.
+Preparing to unpack .../libcc1-0_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libcc1-0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package libgomp1:amd64.
+Preparing to unpack .../libgomp1_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libgomp1:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package libitm1:amd64.
+Preparing to unpack .../libitm1_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libitm1:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package libatomic1:amd64.
+Preparing to unpack .../libatomic1_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libatomic1:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package libasan2:amd64.
+Preparing to unpack .../libasan2_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libasan2:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package liblsan0:amd64.
+Preparing to unpack .../liblsan0_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking liblsan0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package libtsan0:amd64.
+Preparing to unpack .../libtsan0_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libtsan0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package libubsan0:amd64.
+Preparing to unpack .../libubsan0_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libubsan0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package libcilkrts5:amd64.
+Preparing to unpack .../libcilkrts5_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libcilkrts5:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package libmpx0:amd64.
+Preparing to unpack .../libmpx0_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libmpx0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package libquadmath0:amd64.
+Preparing to unpack .../libquadmath0_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libquadmath0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package libgcc-5-dev:amd64.
+Preparing to unpack .../libgcc-5-dev_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libgcc-5-dev:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package gcc-5.
+Preparing to unpack .../gcc-5_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking gcc-5 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../gcc_4%3a5.3.1-1ubuntu1_amd64.deb ...
+Unpacking gcc (4:5.3.1-1ubuntu1) ...
+Selecting previously unselected package libstdc++-5-dev:amd64.
+Preparing to unpack .../libstdc++-5-dev_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking libstdc++-5-dev:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package g++-5.
+Preparing to unpack .../g++-5_5.4.0-6ubuntu1~16.04.5_amd64.deb ...
+Unpacking g++-5 (5.4.0-6ubuntu1~16.04.5) ...
+Selecting previously unselected package g++.
+Preparing to unpack .../g++_4%3a5.3.1-1ubuntu1_amd64.deb ...
+Unpacking g++ (4:5.3.1-1ubuntu1) ...
+Selecting previously unselected package make.
+Preparing to unpack .../archives/make_4.1-6_amd64.deb ...
+Unpacking make (4.1-6) ...
+Selecting previously unselected package libdpkg-perl.
+Preparing to unpack .../libdpkg-perl_1.18.4ubuntu1.3_all.deb ...
+Unpacking libdpkg-perl (1.18.4ubuntu1.3) ...
+Selecting previously unselected package xz-utils.
+Preparing to unpack .../xz-utils_5.1.1alpha+20120614-2ubuntu2_amd64.deb ...
+Unpacking xz-utils (5.1.1alpha+20120614-2ubuntu2) ...
+Selecting previously unselected package patch.
+Preparing to unpack .../patch_2.7.5-1_amd64.deb ...
+Unpacking patch (2.7.5-1) ...
+Selecting previously unselected package dpkg-dev.
+Preparing to unpack .../dpkg-dev_1.18.4ubuntu1.3_all.deb ...
+Unpacking dpkg-dev (1.18.4ubuntu1.3) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../build-essential_12.1ubuntu2_amd64.deb ...
+Unpacking build-essential (12.1ubuntu2) ...
+Selecting previously unselected package libfakeroot:amd64.
+Preparing to unpack .../libfakeroot_1.20.2-1ubuntu1_amd64.deb ...
+Unpacking libfakeroot:amd64 (1.20.2-1ubuntu1) ...
+Selecting previously unselected package fakeroot.
+Preparing to unpack .../fakeroot_1.20.2-1ubuntu1_amd64.deb ...
+Unpacking fakeroot (1.20.2-1ubuntu1) ...
+Selecting previously unselected package libalgorithm-diff-perl.
+Preparing to unpack .../libalgorithm-diff-perl_1.19.03-1_all.deb ...
+Unpacking libalgorithm-diff-perl (1.19.03-1) ...
+Selecting previously unselected package libalgorithm-diff-xs-perl.
+Preparing to unpack .../libalgorithm-diff-xs-perl_0.04-4build1_amd64.deb ...
+Unpacking libalgorithm-diff-xs-perl (0.04-4build1) ...
+Selecting previously unselected package libalgorithm-merge-perl.
+Preparing to unpack .../libalgorithm-merge-perl_0.08-3_all.deb ...
+Unpacking libalgorithm-merge-perl (0.08-3) ...
+Selecting previously unselected package libfile-fcntllock-perl.
+Preparing to unpack .../libfile-fcntllock-perl_0.22-3_amd64.deb ...
+Unpacking libfile-fcntllock-perl (0.22-3) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../manpages-dev_4.04-2_all.deb ...
+Unpacking manpages-dev (4.04-2) ...
+Selecting previously unselected package rename.
+Preparing to unpack .../archives/rename_0.20-4_all.deb ...
+Unpacking rename (0.20-4) ...
+Processing triggers for libc-bin (2.23-0ubuntu9) ...
+Processing triggers for systemd (229-4ubuntu21) ...
+Setting up libatm1:amd64 (1:2.5.1-1.5) ...
+Setting up libmnl0:amd64 (1.0.3-5) ...
+Setting up libgdbm3:amd64 (1.8.3-13.1) ...
+Setting up perl-modules-5.22 (5.22.1-9ubuntu0.2) ...
+Setting up libperl5.22:amd64 (5.22.1-9ubuntu0.2) ...
+Setting up perl (5.22.1-9ubuntu0.2) ...
+update-alternatives: using /usr/bin/prename to provide /usr/bin/rename (rename) in auto mode
+Setting up libgmp10:amd64 (2:6.1.0+dfsg-2) ...
+Setting up libmpfr4:amd64 (3.1.4-1) ...
+Setting up libmpc3:amd64 (1.0.3-1) ...
+Setting up bzip2 (1.0.6-8) ...
+Setting up iproute2 (4.3.0-1ubuntu3.16.04.2) ...
+Setting up ifupdown (0.8.10ubuntu1.2) ...
+Creating /etc/network/interfaces.
+Setting up libisc-export160 (1:9.10.3.dfsg.P4-8ubuntu1.9) ...
+Setting up libdns-export162 (1:9.10.3.dfsg.P4-8ubuntu1.9) ...
+Setting up isc-dhcp-client (4.3.3-5ubuntu12.7) ...
+Setting up isc-dhcp-common (4.3.3-5ubuntu12.7) ...
+Setting up libxtables11:amd64 (1.6.0-2ubuntu3) ...
+Setting up netbase (5.3) ...
+Setting up manpages (4.04-2) ...
+Setting up binutils (2.26.1-1ubuntu1~16.04.5) ...
+Setting up libc-dev-bin (2.23-0ubuntu9) ...
+Setting up linux-libc-dev:amd64 (4.4.0-109.132) ...
+Setting up libc6-dev:amd64 (2.23-0ubuntu9) ...
+Setting up libisl15:amd64 (0.16.1-1) ...
+Setting up cpp-5 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up cpp (4:5.3.1-1ubuntu1) ...
+Setting up libcc1-0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up libgomp1:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up libitm1:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up libatomic1:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up libasan2:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up liblsan0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up libtsan0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up libubsan0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up libcilkrts5:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up libmpx0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up libquadmath0:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up libgcc-5-dev:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up gcc-5 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up gcc (4:5.3.1-1ubuntu1) ...
+Setting up libstdc++-5-dev:amd64 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up g++-5 (5.4.0-6ubuntu1~16.04.5) ...
+Setting up g++ (4:5.3.1-1ubuntu1) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+Setting up make (4.1-6) ...
+Setting up libdpkg-perl (1.18.4ubuntu1.3) ...
+Setting up xz-utils (5.1.1alpha+20120614-2ubuntu2) ...
+update-alternatives: using /usr/bin/xz to provide /usr/bin/lzma (lzma) in auto mode
+Setting up patch (2.7.5-1) ...
+Setting up dpkg-dev (1.18.4ubuntu1.3) ...
+Setting up build-essential (12.1ubuntu2) ...
+Setting up libfakeroot:amd64 (1.20.2-1ubuntu1) ...
+Setting up fakeroot (1.20.2-1ubuntu1) ...
+update-alternatives: using /usr/bin/fakeroot-sysv to provide /usr/bin/fakeroot (fakeroot) in auto mode
+Setting up libalgorithm-diff-perl (1.19.03-1) ...
+Setting up libalgorithm-diff-xs-perl (0.04-4build1) ...
+Setting up libalgorithm-merge-perl (0.08-3) ...
+Setting up libfile-fcntllock-perl (0.22-3) ...
+Setting up manpages-dev (4.04-2) ...
+Setting up rename (0.20-4) ...
+update-alternatives: using /usr/bin/file-rename to provide /usr/bin/rename (rename) in auto mode
+Processing triggers for libc-bin (2.23-0ubuntu9) ...
+Processing triggers for systemd (229-4ubuntu21) ...
+Removing intermediate container a94596443a49
+ ---> c68eeacd1d69
+Step 4/8 : COPY hello.c /
+ ---> 6b1e002eda8e
+Step 5/8 : RUN make hello
+ ---> Running in 406b91da23f5
+cc     hello.c   -o hello
+hello.c: In function 'main':
+hello.c:2:1: warning: implicit declaration of function 'puts' [-Wimplicit-function-declaration]
+ puts("Hello world");
+ ^
+Removing intermediate container 406b91da23f5
+ ---> aebd7defa5b3
+Step 6/8 : FROM ubuntu
+ ---> 00fd29ccc6f1
+Step 7/8 : COPY --from=compiler /hello /hello
+ ---> cb23ce0c589c
+Step 8/8 : CMD /hello
+ ---> Running in 53e4401ba184
+Removing intermediate container 53e4401ba184
+ ---> 2c4b94d694e6
+Successfully built 2c4b94d694e6
+Successfully tagged testc:latest
+[usere@lx-12-5 multi]$ docker image run testc
+
+Usage:	docker image COMMAND
+
+Manage images
+
+Options:
+
+
+Commands:
+  build       Build an image from a Dockerfile
+  history     Show the history of an image
+  import      Import the contents from a tarball to create a filesystem image
+  inspect     Display detailed information on one or more images
+  load        Load an image from a tar archive or STDIN
+  ls          List images
+  prune       Remove unused images
+  pull        Pull an image or a repository from a registry
+  push        Push an image or a repository to a registry
+  rm          Remove one or more images
+  save        Save one or more images to a tar archive (streamed to STDOUT by default)
+  tag         Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+
+Run 'docker image COMMAND --help' for more information on a command.
+[usere@lx-12-5 multi]$ docker container run testc
+Hello world
+[usere@lx-12-5 multi]$ systemctl status docker
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/usr/lib/systemd/system/docker.service; enabled; vendor preset: disabled)
+   Active: active (running) since mar. 2018-01-16 08:40:58 CET; 7h ago
+     Docs: https://docs.docker.com
+ Main PID: 1101 (dockerd)
+   Memory: 168.1M
+   CGroup: /system.slice/docker.service
+           ├─ 1101 /usr/bin/dockerd
+           ├─ 1614 docker-containerd --config /var/run/docker/containerd/containerd.toml
+           ├─29211 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 32774 -container-ip 172.17.0.2 -container-port 80
+           └─29217 docker-containerd-shim -namespace moby -workdir /var/lib/docker/containerd/daemon/io.containerd.runtime.v1.linux/moby/33f9ac74e0d1c520bdd88f6d58eed0b493db708195c43c47271...
+[usere@lx-12-5 multi]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                   NAMES
+33f9ac74e0d1        pythonapp           "python app.py"     2 hours ago         Up 2 hours          0.0.0.0:32774->80/tcp   condescending_jang
+[usere@lx-12-5 multi]$ docker container inspect 33f9ac74e0d1
+[
+    {
+        "Id": "33f9ac74e0d1c520bdd88f6d58eed0b493db708195c43c472714c34f6f9b743a",
+        "Created": "2018-01-16T13:17:16.694189033Z",
+        "Path": "python",
+        "Args": [
+            "app.py"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 29232,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2018-01-16T13:17:17.120754901Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:e6bd451979dec14cb0df350cee65c0ca653a5a484a0e2792909a64808782d1f0",
+        "ResolvConfPath": "/var/lib/docker/containers/33f9ac74e0d1c520bdd88f6d58eed0b493db708195c43c472714c34f6f9b743a/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/33f9ac74e0d1c520bdd88f6d58eed0b493db708195c43c472714c34f6f9b743a/hostname",
+        "HostsPath": "/var/lib/docker/containers/33f9ac74e0d1c520bdd88f6d58eed0b493db708195c43c472714c34f6f9b743a/hosts",
+        "LogPath": "/var/lib/docker/containers/33f9ac74e0d1c520bdd88f6d58eed0b493db708195c43c472714c34f6f9b743a/33f9ac74e0d1c520bdd88f6d58eed0b493db708195c43c472714c34f6f9b743a-json.log",
+        "Name": "/condescending_jang",
+        "RestartCount": 0,
+        "Driver": "devicemapper",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "default",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "CapAdd": null,
+            "CapDrop": null,
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "shareable",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": true,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DiskQuota": 0,
+            "KernelMemory": 0,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": false,
+            "PidsLimit": 0,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0
+        },
+        "GraphDriver": {
+            "Data": {
+                "DeviceId": "197",
+                "DeviceName": "docker-8:3-134475063-7d7e0ca3156bfb3cfa4e357cc6c0aadd2268220ffd464718456a0e6bb7288fbc",
+                "DeviceSize": "10737418240"
+            },
+            "Name": "devicemapper"
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "33f9ac74e0d1",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "ExposedPorts": {
+                "80/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LANG=C.UTF-8",
+                "GPG_KEY=C01E1CAD5EA2C4F0B8E3571504C367C218ADD4FF",
+                "PYTHON_VERSION=2.7.14",
+                "PYTHON_PIP_VERSION=9.0.1",
+                "NAME=World"
+            ],
+            "Cmd": [
+                "python",
+                "app.py"
+            ],
+            "ArgsEscaped": true,
+            "Image": "pythonapp",
+            "Volumes": null,
+            "WorkingDir": "/app",
+            "Entrypoint": null,
+            "OnBuild": null,
+            "Labels": {}
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "9939f762f4267890ad877f00a01ade501d7381768f2ae473bb027f5fcd2962ff",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {
+                "80/tcp": [
+                    {
+                        "HostIp": "0.0.0.0",
+                        "HostPort": "32774"
+                    }
+                ]
+            },
+            "SandboxKey": "/var/run/docker/netns/9939f762f426",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "de5cb028b7676939b378a86729afa7583641bc58bb8a6beb84908f6c126b8a1d",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.2",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:02",
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "178e28575114b3941454abede53f5b9f93093932db4a8e4d0291370adb4a1265",
+                    "EndpointID": "de5cb028b7676939b378a86729afa7583641bc58bb8a6beb84908f6c126b8a1d",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:02",
+                    "DriverOpts": null
+                }
+            }
+        }
+    }
+]
+[usere@lx-12-5 multi]$ docker run -d --log-driver=journald --name nginx --net my_bridge -p 5010:80 nginx
+193ba1a938569b56c2f52403d687feee8eb63b2fa8ac9a8ab63e43caf012ee52
+docker: Error response from daemon: network my_bridge not found.
+[usere@lx-12-5 multi]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                   NAMES
+33f9ac74e0d1        pythonapp           "python app.py"     2 hours ago         Up 2 hours          0.0.0.0:32774->80/tcp   condescending_jang
+[usere@lx-12-5 multi]$ docker run -d --log-driver=journald --name nginx  -p 5010:80 nginx
+docker: Error response from daemon: Conflict. The container name "/nginx" is already in use by container "193ba1a938569b56c2f52403d687feee8eb63b2fa8ac9a8ab63e43caf012ee52". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+[usere@lx-12-5 multi]$ docker run -d --log-driver=journald --name nginx --net my_bridge -p 5010:80 nginx2
+Unable to find image 'nginx2:latest' locally
+docker: Error response from daemon: pull access denied for nginx2, repository does not exist or may require 'docker login'.
+See 'docker run --help'.
+[usere@lx-12-5 multi]$ docker run -d --log-driver=journald --name nginx2 --net my_bridge -p 5010:80 nginx
+9948485db5225000e8234d23f25c0dbebe1ad40c3bddbb71e55ff5be34e2d5e7
+docker: Error response from daemon: network my_bridge not found.
+[usere@lx-12-5 multi]$ su - 
+Mot de passe : 
+Dernière connexion : mardi 16 janvier 2018 à 09:14:27 CET sur pts/1
+[root@lx-12-5 ~]# docker run -d --log-driver=journald --name nginx2 --net my_bridge -p 5010:80 nginx
+docker: Error response from daemon: Conflict. The container name "/nginx2" is already in use by container "9948485db5225000e8234d23f25c0dbebe1ad40c3bddbb71e55ff5be34e2d5e7". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+[root@lx-12-5 ~]# docker run -d --log-driver=journald --name nginx3 --net my_bridge -p 5010:80 nginx
+a3b751338c8ce751f0044678fc7a62b56a0ab50c2e0e820ff9b80b3496154b81
+docker: Error response from daemon: network my_bridge not found.
+[root@lx-12-5 ~]# docker run -d --log-driver=journald --name nginx4  -p 5010:80 nginx
+9ae46d1a9d9884f8e2d53d0dca9cd3806f6fc8d5d5f4f58c4ac1379ac61497a0
+[root@lx-12-5 ~]# docker run -d --log-driver=journald --name nginx2 --net my_bridge -p 5010:80 nginx
+docker: Error response from daemon: Conflict. The container name "/nginx2" is already in use by container "9948485db5225000e8234d23f25c0dbebe1ad40c3bddbb71e55ff5be34e2d5e7". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+[root@lx-12-5 ~]# curl -I http://127.0.0.1:5010/pagequinexistepas      
+HTTP/1.1 404 Not Found
+Server: nginx/1.13.8
+Date: Tue, 16 Jan 2018 15:33:24 GMT
+Content-Type: text/html
+Content-Length: 169
+Connection: keep-alive
+
+[root@lx-12-5 ~]# docker run -d --log-driver=journald --name nginx2 --net my_bridge -p 5010:80 nginx
+docker: Error response from daemon: Conflict. The container name "/nginx2" is already in use by container "9948485db5225000e8234d23f25c0dbebe1ad40c3bddbb71e55ff5be34e2d5e7". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+[root@lx-12-5 ~]# docker run -d --log-driver=journald --name nginx2 --net my_bridge -p 5010:80 nginx
+docker: Error response from daemon: Conflict. The container name "/nginx2" is already in use by container "9948485db5225000e8234d23f25c0dbebe1ad40c3bddbb71e55ff5be34e2d5e7". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+[root@lx-12-5 ~]# docker run -d --log-driver=journald --name nginx4 --net my_bridge -p 5010:80 nginx
+docker: Error response from daemon: Conflict. The container name "/nginx4" is already in use by container "9ae46d1a9d9884f8e2d53d0dca9cd3806f6fc8d5d5f4f58c4ac1379ac61497a0". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+[root@lx-12-5 ~]# docker run -d --log-driver=journald --name nginx5 --net my_bridge -p 5010:80 nginx
+1caf4da0f828bd120529e07b606019f867312c05761ff3f6563a56f5c54a6f61
+docker: Error response from daemon: network my_bridge not found.
+[root@lx-12-5 ~]# docker run -d --log-driver=journald --name nginx -p 5010:80 nginx
+docker: Error response from daemon: Conflict. The container name "/nginx" is already in use by container "193ba1a938569b56c2f52403d687feee8eb63b2fa8ac9a8ab63e43caf012ee52". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+[root@lx-12-5 ~]# docker run -d --log-driver=journald --name nginx6 -p 5010:80 nginx
+7b3938c0671eb39a743f3e6c067ad04838dad1bab1311f0beb797fa65a1f19d8
+docker: Error response from daemon: driver failed programming external connectivity on endpoint nginx6 (25e7ac87078e930483a041644a196e82a82666d772aa2f71b369b36979c4a2fd): Bind for 0.0.0.0:5010 failed: port is already allocated.
+[root@lx-12-5 ~]# exit
+déconnexion
+[usere@lx-12-5 multi]$ docker container stop $( docker container ls -q)
+9ae46d1a9d98
+^C
+[usere@lx-12-5 multi]$ ^C
+[usere@lx-12-5 multi]$ docker container ls
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+[usere@lx-12-5 multi]$ docker container ls -a
+CONTAINER ID        IMAGE                COMMAND                   CREATED              STATUS                        PORTS               NAMES
+7b3938c0671e        nginx                "nginx -g 'daemon of…"    About a minute ago   Created                                           nginx6
+1caf4da0f828        nginx                "nginx -g 'daemon of…"    About a minute ago   Created                                           nginx5
+9ae46d1a9d98        nginx                "nginx -g 'daemon of…"    3 minutes ago        Exited (0) 23 seconds ago                         nginx4
+a3b751338c8c        nginx                "nginx -g 'daemon of…"    3 minutes ago        Created                                           nginx3
+9948485db522        nginx                "nginx -g 'daemon of…"    4 minutes ago        Created                                           nginx2
+193ba1a93856        nginx                "nginx -g 'daemon of…"    6 minutes ago        Created                                           nginx
+07d6e194277f        testc                "/bin/sh -c /hello"       22 minutes ago       Exited (0) 22 minutes ago                         musing_ritchie
+36c28720acf1        helloubuntu          "/bin/echo hello toto"    2 hours ago          Exited (0) 2 hours ago                            trusting_goodall
+272b9f2189b9        helloubuntu          "/bin/echo hello wor…"    2 hours ago          Exited (0) 2 hours ago                            upbeat_heyrovsky
+4e774c456858        90d1ebb15912         "/bin/echo hello /bi…"    2 hours ago          Exited (0) 2 hours ago                            quirky_cori
+c5cae413858b        7570fe7e5079         "/bin/sh -c 'echo \"H…"   2 hours ago          Exited (0) 2 hours ago                            modest_austin
+33f9ac74e0d1        pythonapp            "python app.py"           2 hours ago          Exited (137) 13 seconds ago                       condescending_jang
+263fae509a77        75cdc26e7a38         "python app.py"           2 hours ago          Exited (1) 2 hours ago                            jovial_sammet
+745885f938dd        cbf757c1ea33         "python app.py"           2 hours ago          Exited (1) 2 hours ago                            dazzling_kalam
+ee9ef985c0f6        ec008c9ff390         "python app.py"           2 hours ago          Exited (1) 2 hours ago                            admiring_payne
+93ab046cd27c        ec008c9ff390         "python app.py"           2 hours ago          Exited (1) 2 hours ago                            cocky_einstein
+c667f7036b11        linux_tweet_app:v1   "nginx -g 'daemon of…"    5 hours ago          Exited (0) 2 hours ago                            linux_tweet_app2
+1468842d660e        linux_tweet_app:v1   "nginx -g 'daemon of…"    5 hours ago          Exited (0) 5 hours ago                            linux_tweet_app
+1dc72cdbedfd        nginx                "nginx -g 'daemon of…"    5 hours ago          Exited (0) 5 hours ago                            pedantic_bartik
+fd8378f96654        mysql                "docker-entrypoint.s…"    6 hours ago          Exited (0) 5 hours ago                            mydb
+505386514dd1        jpetazzo/clock       "/bin/sh -c 'while d…"    7 hours ago          Exited (137) 5 hours ago                          stupefied_bardeen
+181b4c0525c6        jpetazzo/clock       "/bin/sh -c 'while d…"    7 hours ago          Exited (0) 7 hours ago                            gracious_roentgen
+19bf0a13ef81        nginx:alpine         "nginx -g 'daemon of…"    7 hours ago          Exited (0) 5 hours ago                            web
+344612e27f50        alpine               "/bin/sh"                 7 hours ago          Exited (137) 7 hours ago                          romantic_archimedes
+74d432de7d2d        jthorel/hello        "/hello"                  7 hours ago          Exited (0) 7 hours ago                            quirky_chatterjee
+aedb7c3c63c4        sjourdan/strace      "strace -f -p 1"          24 hours ago         Exited (0) 24 hours ago                           amazing_lovelace
+bb1e037c1750        alpine               "sh"                      24 hours ago         Exited (1) 24 hours ago                           hungry_jones
+99b9d1e657dc        alpine               "sh"                      25 hours ago         Created                                           hungry_feynman
+ca9ec64f7e4f        alpine               "chown nobody /"          25 hours ago         Exited (1) 25 hours ago                           zealous_albattani
+9c54ec8245e8        alpine               "chown nobody /"          25 hours ago         Exited (1) 25 hours ago                           practical_dubinsky
+af21823c63fa        alpine               "chown nobody /"          25 hours ago         Exited (1) 25 hours ago                           inspiring_swirles
+e0d3cfdcb0b5        alpine               "chown nobody /"          25 hours ago         Exited (0) 25 hours ago                           relaxed_pare
+cb2ae2235a3f        alpine               "chown nobody /"          25 hours ago         Exited (0) 25 hours ago                           gifted_meitner
+a2d2d902547a        ubuntu               "/bin/bash"               25 hours ago         Exited (0) 25 hours ago                           hungry_joliot
+f917c96a95ad        ubuntu               "/bin/bash"               26 hours ago         Exited (0) 26 hours ago                           adoring_saha
+[usere@lx-12-5 multi]$ docker container ls -a | grep nginx
+7b3938c0671e        nginx                "nginx -g 'daemon of…"    About a minute ago   Created                                           nginx6
+1caf4da0f828        nginx                "nginx -g 'daemon of…"    About a minute ago   Created                                           nginx5
+9ae46d1a9d98        nginx                "nginx -g 'daemon of…"    3 minutes ago        Exited (0) 36 seconds ago                         nginx4
+a3b751338c8c        nginx                "nginx -g 'daemon of…"    4 minutes ago        Created                                           nginx3
+9948485db522        nginx                "nginx -g 'daemon of…"    4 minutes ago        Created                                           nginx2
+193ba1a93856        nginx                "nginx -g 'daemon of…"    6 minutes ago        Created                                           nginx
+c667f7036b11        linux_tweet_app:v1   "nginx -g 'daemon of…"    5 hours ago          Exited (0) 2 hours ago                            linux_tweet_app2
+1468842d660e        linux_tweet_app:v1   "nginx -g 'daemon of…"    5 hours ago          Exited (0) 5 hours ago                            linux_tweet_app
+1dc72cdbedfd        nginx                "nginx -g 'daemon of…"    5 hours ago          Exited (0) 5 hours ago                            pedantic_bartik
+19bf0a13ef81        nginx:alpine         "nginx -g 'daemon of…"    7 hours ago          Exited (0) 5 hours ago                            web
+[usere@lx-12-5 multi]$ docker container rm nginx2
+nginx2
+[usere@lx-12-5 multi]$ docker container rm nginx3
+nginx3
+[usere@lx-12-5 multi]$ docker container rm nginx4
+nginx4
+[usere@lx-12-5 multi]$ docker container rm nginx5
+nginx5
+[usere@lx-12-5 multi]$ docker container rm nginx6
+nginx6
+[usere@lx-12-5 multi]$ docker container ls -a | grep nginx
+193ba1a93856        nginx                "nginx -g 'daemon of…"    7 minutes ago       Created                                               nginx
+c667f7036b11        linux_tweet_app:v1   "nginx -g 'daemon of…"    5 hours ago         Exited (0) 2 hours ago                                linux_tweet_app2
+1468842d660e        linux_tweet_app:v1   "nginx -g 'daemon of…"    5 hours ago         Exited (0) 5 hours ago                                linux_tweet_app
+1dc72cdbedfd        nginx                "nginx -g 'daemon of…"    5 hours ago         Exited (0) 5 hours ago                                pedantic_bartik
+19bf0a13ef81        nginx:alpine         "nginx -g 'daemon of…"    7 hours ago         Exited (0) 5 hours ago                                web
+[usere@lx-12-5 multi]$ docker run -d --log-driver=journald --name nginx2  -p 5010:80 nginx
+70208e95b68276097f0cd334bcf9db9197ecbdb5641b475e950f89cacba48dbd
+[usere@lx-12-5 multi]$ s
+
