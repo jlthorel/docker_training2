@@ -193,3 +193,8 @@ docker service create \
 
 
 
+https://mensuel.framapad.org/p/docker0118
+
+
+
+http://training.play-with-docker.com/traefik-load-balancing/
